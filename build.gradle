@@ -16,9 +16,9 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
-version = '0.0.1'
+version = "${mod_version}"
 group = 'com.breakinblocks.bbchat'
-archivesBaseName = 'bbchat'
+archivesBaseName = "bbchat-${mc_version}"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
@@ -96,7 +96,7 @@ dependencies {
     // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.15.2-31.1.0'
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
     // You may put jars on which you depend on in ./libs or you may define them like so..
     // compile "some.group:artifact:version:classifier"
@@ -116,8 +116,31 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
-    compile ('net.dv8tion:JDA:4.1.1_140') {
+    compile ("net.dv8tion:JDA:${jda_version}") {
         exclude module: 'opus-java'
+        exclude module: 'jsr305'
+    }
+}
+
+processResources {
+    // this will ensure that this task is redone when the versions change.
+    inputs.property 'mod_version', project.mod_version
+    inputs.property 'mc_version', project.mc_version
+    inputs.property 'forge_version_major', project.forge_version_major
+
+    // replace stuff in mods.toml, nothing else
+    from (sourceSets.main.resources.srcDirs) {
+        include 'META-INF/mods.toml'
+
+        // replace mod_version and mc_version and forge_version_major
+        expand 'mod_version': "${mod_version}",
+                'mc_version': "${mc_version}",
+                'forge_version_major' : "${forge_version_major}"
+    }
+
+    // copy everything else except the mods.toml
+    from (sourceSets.main.resources.srcDirs) {
+        exclude 'META-INF/mods.toml'
     }
 }
 
@@ -140,9 +163,9 @@ shadowJar {
     classifier = "" // remove -all from the jar
 
     dependencies {
-        include(dependency('com.google.code.findbugs:jsr305'))
+        include(dependency('net.dv8tion:JDA'))
         include(dependency('org.jetbrains:annotations'))
-        include(dependency('org.slf4j:slf3j-api'))
+        include(dependency('org.slf4j:slf4j-api'))
         include(dependency('com.neovisionaries:nv-websocket-client'))
         include(dependency('com.squareup.okhttp3:okhttp'))
             include(dependency('com.squareup.okio:okio'))
@@ -152,6 +175,22 @@ shadowJar {
             include(dependency('com.fasterxml.jackson.core:jackson-annotations'))
             include(dependency('com.fasterxml.jackson.core:jackson-core'))
     }
+
+    ext.relocatePackage = { p -> relocate(p, 'com.breakinblocks.bbchat.shadow.' + p)}
+
+    relocatePackage('net.dv8tion')
+        relocatePackage('com.iwebpp.crypto')
+    relocatePackage('org.jetbrains.annotations')
+        relocatePackage('org.intellij.lang.annotations')
+    relocatePackage('org.slf4j')
+    relocatePackage('com.neovisionaries.ws.client')
+    relocatePackage('okhttp3')
+        relocatePackage('okio')
+    relocatePackage('org.apache.commons.collections4')
+    relocatePackage('gnu.trove')
+    relocatePackage('com.fasterxml.jackson.databind')
+        relocatePackage('com.fasterxml.jackson.core')
+        relocatePackage('com.fasterxml.jackson.annotation')
 }
 
 reobf {
