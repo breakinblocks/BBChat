@@ -5,28 +5,30 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.ReconnectedEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.AnnotatedEventManager;
+import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.ServerChatEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.security.auth.login.LoginException;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
 
-public class ChatRelay {
-    private final MinecraftServer server;
+public class ChatRelay implements IRelay {
+    private final Consumer<String> broadcastMessage;
     private final JDA jda;
     private final long guildId;
     private final long channelId;
+    private final ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
 
-    public ChatRelay(MinecraftServer server, String botToken, long serverId, long channelId) throws LoginException {
-        this.server = server;
+    public ChatRelay(Consumer<String> broadcastMessage, String botToken, long serverId, long channelId) throws LoginException {
+        this.broadcastMessage = broadcastMessage;
         this.jda = JDABuilder
                 .create(botToken,
                         GatewayIntent.GUILD_MESSAGES
@@ -47,12 +49,7 @@ public class ChatRelay {
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-    public void cleanup() {
-        MinecraftForge.EVENT_BUS.unregister(this);
-        this.jda.shutdown();
-    }
-
-    @net.dv8tion.jda.api.hooks.SubscribeEvent
+    @SubscribeEvent
     public void relayDiscordMessageToMinecraft(MessageReceivedEvent event) {
         if (event.getChannelType() != ChannelType.TEXT) return;
         if (event.getGuild().getIdLong() != guildId) return;
@@ -62,16 +59,64 @@ public class ChatRelay {
         String name = member.getEffectiveName();
         String text = event.getMessage().getContentDisplay();
         String message = String.format("[%s] %s", name, text);
-        server.getPlayerList().sendMessage(new StringTextComponent(message), false);
+        broadcastMessage.accept(message);
+    }
+
+    private void sendQueueToDiscord() {
+        TextChannel channel = jda.getTextChannelById(channelId);
+        if (channel == null) return;
+        for (String message = messageQueue.poll(); message != null; message = messageQueue.poll()) {
+            channel.sendMessage(message).submit();
+        }
+    }
+
+    private void sendToDiscord(String message) {
+        messageQueue.add(message);
+        sendQueueToDiscord();
     }
 
     @SubscribeEvent
-    public void relayMinecraftMessageToDiscord(ServerChatEvent event) {
-        TextChannel channel = jda.getTextChannelById(channelId);
-        if (channel == null) return;
-        String name = event.getPlayer().getName().getUnformattedComponentText();
-        String text = event.getMessage();
-        String message = String.format("**[%s]** %s", name, text);
-        channel.sendMessage(message).submit();
+    public void sendQueueOnConnect(ReadyEvent event) {
+        sendQueueToDiscord();
+    }
+
+    @SubscribeEvent
+    public void sendQueueOnReconnect(ReconnectedEvent event) {
+        sendQueueToDiscord();
+    }
+
+    @Override
+    public void cleanup() {
+        this.jda.shutdown();
+    }
+
+    @Override
+    public void onStarted() {
+        sendToDiscord("**Server Started**");
+    }
+
+    @Override
+    public void onStopped() {
+        sendToDiscord("**Server Stopped**");
+    }
+
+    @Override
+    public void onChat(String name, String text) {
+        sendToDiscord(String.format("**[%s]** %s", name, text));
+    }
+
+    @Override
+    public void onLogin(String name) {
+        sendToDiscord(String.format("**%s** joined the server", name));
+    }
+
+    @Override
+    public void onLogout(String name) {
+        sendToDiscord(String.format("**%s** left the server", name));
+    }
+
+    @Override
+    public void onAchievement(String name, String title, String description) {
+        sendToDiscord(String.format("**%s** got **%s** *%s*", name, title, description));
     }
 }
