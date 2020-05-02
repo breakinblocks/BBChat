@@ -191,6 +191,8 @@ shadowJar {
     relocatePackage('com.fasterxml.jackson.databind')
         relocatePackage('com.fasterxml.jackson.core')
         relocatePackage('com.fasterxml.jackson.annotation')
+
+    exclude 'module-info.class' // Java 9 feature
 }
 
 reobf {
