@@ -27,15 +27,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.security.auth.login.LoginException;
+import java.util.stream.Collectors;
 
 @Mod(BBChat.MODID)
 public class BBChat {
     public static final String MODID = "bbchat";
     private static final Logger LOGGER = LogManager.getLogger();
-    public static IRelay relay = DummyRelay.INSTANCE;
+    private IRelay relay = DummyRelay.INSTANCE;
 
     public BBChat() {
-        MinecraftForge.EVENT_BUS.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BBChatConfig.commonSpec);
         // Ignore this mod being installed on either side
         ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
@@ -47,10 +47,15 @@ public class BBChat {
         try {
             final MinecraftServer server = event.getServer();
             relay = new ChatRelay(
+                    server,
                     (msg) -> server.getPlayerList().sendMessage(new StringTextComponent(msg), false),
                     BBChatConfig.COMMON.botToken.get(),
                     BBChatConfig.COMMON.guildId.get(),
-                    BBChatConfig.COMMON.channelId.get()
+                    BBChatConfig.COMMON.channelId.get(),
+                    BBChatConfig.COMMON.staffRoleId.get(),
+                    BBChatConfig.COMMON.commandPrefix.get(),
+                    BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
+                    BBChatConfig.COMMON.staffCommands.get().stream().map(String::toString).collect(Collectors.toList())
             );
         } catch (LoginException e) {
             LOGGER.warn("Failed to login ;-;. Check your bot token.", e);

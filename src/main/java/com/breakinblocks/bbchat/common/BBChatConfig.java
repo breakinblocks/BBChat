@@ -6,6 +6,10 @@ import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.common.ForgeConfigSpec.LongValue;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
 public class BBChatConfig {
     public static final ForgeConfigSpec commonSpec;
     public static final Common COMMON;
@@ -20,6 +24,10 @@ public class BBChatConfig {
         public final ConfigValue<String> botToken;
         public final LongValue guildId;
         public final LongValue channelId;
+        public final LongValue staffRoleId;
+        public final ConfigValue<String> commandPrefix;
+        public final ConfigValue<List<? extends String>> anyCommands;
+        public final ConfigValue<List<? extends String>> staffCommands;
 
         public Common(Builder builder) {
             botToken = builder
@@ -31,6 +39,22 @@ public class BBChatConfig {
             channelId = builder
                     .worldRestart()
                     .defineInRange("channelId", 0L, Long.MIN_VALUE, Long.MAX_VALUE);
+            staffRoleId = builder
+                    .worldRestart()
+                    .comment("Staff will run commands with OP level defined in server.properties. Otherwise level 0.")
+                    .defineInRange("staffRoleId", 0L, Long.MIN_VALUE, Long.MAX_VALUE);
+            commandPrefix = builder
+                    .worldRestart()
+                    .comment("Commands must be prefixed with this (can also start with a direct mention).")
+                    .define("commandPrefix", "!");
+            anyCommands = builder
+                    .worldRestart()
+                    .comment("Anyone can use these commands. Will be run with OP Level 0 (non-operator) if not staff.")
+                    .defineList("anyCommands", Arrays.asList("list", "forge"), Objects::nonNull);
+            staffCommands = builder
+                    .worldRestart()
+                    .comment("Only staff can use these commands.")
+                    .defineList("staffCommands", Arrays.asList("stop", "op", "deop", "whitelist", "kick", "ban", "pardon"), Objects::nonNull);
         }
     }
 }
