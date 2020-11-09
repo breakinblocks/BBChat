@@ -68,12 +68,12 @@ public class BBChat {
         relay = DummyRelay.INSTANCE;
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void relayServerStarted(FMLServerStartedEvent event) {
         relay.onStarted();
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void relayServerStopped(FMLServerStoppedEvent event) {
         relay.onStopped();
     }

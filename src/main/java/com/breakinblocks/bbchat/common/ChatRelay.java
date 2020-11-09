@@ -25,7 +25,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.dimension.DimensionType;
-import net.minecraftforge.common.MinecraftForge;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -75,7 +74,6 @@ public class ChatRelay implements IRelay {
         this.commandPrefixes = ImmutableList.of(commandPrefix, "<@!" + this.jda.getSelfUser().getId() + "> ");
         this.anyCommands = ImmutableSet.copyOf(anyCommands);
         this.staffCommands = ImmutableSet.<String>builder().addAll(this.anyCommands).addAll(staffCommands).build();
-        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent
