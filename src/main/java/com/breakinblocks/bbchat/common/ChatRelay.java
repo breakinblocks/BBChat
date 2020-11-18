@@ -15,18 +15,8 @@ import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.ICommandSource;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.dimension.DimensionType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
 import java.util.Collection;
@@ -37,8 +27,6 @@ import java.util.function.Consumer;
 
 public class ChatRelay implements IRelay {
     private static final Logger LOGGER = LogManager.getLogger();
-    private final MinecraftServer server;
-    private final Consumer<String> broadcastMessage;
     private final JDA jda;
     private final long guildId;
     private final long channelId;
@@ -47,10 +35,20 @@ public class ChatRelay implements IRelay {
     private final Set<String> anyCommands;
     private final Set<String> staffCommands;
     private final ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
+    private final Consumer<String> broadcastMessage;
+    private final CommandHandler commandHandler;
 
-    public ChatRelay(MinecraftServer server, Consumer<String> broadcastMessage, String botToken, long serverId, long channelId, long staffRoleId, String commandPrefix, Collection<String> anyCommands, Collection<String> staffCommands) throws LoginException {
-        this.server = server;
-        this.broadcastMessage = broadcastMessage;
+    public ChatRelay(
+            String botToken,
+            long serverId,
+            long channelId,
+            long staffRoleId,
+            String commandPrefix,
+            Collection<String> anyCommands,
+            Collection<String> staffCommands,
+            Consumer<String> broadcastMessage,
+            CommandHandler commandHandler
+    ) throws LoginException {
         this.jda = JDABuilder
                 .create(botToken,
                         GatewayIntent.GUILD_MESSAGES
@@ -72,6 +70,8 @@ public class ChatRelay implements IRelay {
         this.commandPrefixes = ImmutableSet.of(commandPrefix, "<@!" + this.jda.getSelfUser().getId() + "> ");
         this.anyCommands = ImmutableSet.copyOf(anyCommands);
         this.staffCommands = ImmutableSet.<String>builder().addAll(this.anyCommands).addAll(staffCommands).build();
+        this.broadcastMessage = broadcastMessage;
+        this.commandHandler = commandHandler;
     }
 
     @SubscribeEvent
@@ -95,50 +95,18 @@ public class ChatRelay implements IRelay {
         if (prefix == null) return;
         final String fullCommand = rawMessage.substring(prefix.length());
         final boolean isStaff = member.getRoles().stream().anyMatch(role -> role.getIdLong() == staffRoleId);
-        Set<String> commands = isStaff ? staffCommands : this.anyCommands;
-        String commandRoot = fullCommand.split(" ", 2)[0];
+        final Set<String> commands = isStaff ? staffCommands : this.anyCommands;
+        final String commandRoot = fullCommand.split(" ", 2)[0];
         // Check that the base command is allowed
         if (!commands.contains(commandRoot)) return;
-        // Create a command source with the correct level
-        final int opLevel = isStaff ? server.getOpPermissionLevel() : 0;
-        CommandSource source = new CommandSource(
-                getTextChannelSource(message.getTextChannel()),
-                Vec3d.ZERO, Vec2f.ZERO, server.getWorld(DimensionType.OVERWORLD),
-                opLevel,
-                member.getUser().getAsTag() + " (" + member.getId() + ")", new StringTextComponent(member.getEffectiveName()),
-                this.server, null
-        );
-        LOGGER.info(source.getName() + " ran the command `" + fullCommand + "`");
-        server.getCommandManager().handleCommand(source, fullCommand);
+        // Run command
+        final String name = member.getUser().getAsTag() + " (" + member.getId() + ")";
+        final String displayName = member.getEffectiveName();
+        final String logName = member.getNickname() == null ? name : name + "/" + displayName;
+        LOGGER.info(logName + " is running the command `" + fullCommand + "`");
+        commandHandler.handleCommand(isStaff, name, displayName, fullCommand, this::sendToDiscord);
     }
 
-    @NotNull
-    private ICommandSource getTextChannelSource(TextChannel textChannel) {
-        return new ICommandSource() {
-            @Override
-            public void sendMessage(ITextComponent component) {
-                final String message = Objects.requireNonNull(TextFormatting.getTextWithoutFormattingCodes(component.getFormattedText()));
-                if (message.length() > 0) {
-                    textChannel.sendMessage(message).submit();
-                }
-            }
-
-            @Override
-            public boolean shouldReceiveFeedback() {
-                return true;
-            }
-
-            @Override
-            public boolean shouldReceiveErrors() {
-                return true;
-            }
-
-            @Override
-            public boolean allowLogging() {
-                return true;
-            }
-        };
-    }
 
     private void sendQueueToDiscord() {
         TextChannel channel = jda.getTextChannelById(channelId);
