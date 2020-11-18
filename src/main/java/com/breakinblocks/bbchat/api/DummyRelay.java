@@ -1,5 +1,7 @@
 package com.breakinblocks.bbchat.api;
 
+import javax.annotation.Nullable;
+
 public class DummyRelay implements IRelay {
     public static final DummyRelay INSTANCE = new DummyRelay();
 
@@ -43,7 +45,7 @@ public class DummyRelay implements IRelay {
     }
 
     @Override
-    public void onDeath(String deathMessage) {
+    public void onDeath(String message, String target, @Nullable String source) {
 
     }
 }

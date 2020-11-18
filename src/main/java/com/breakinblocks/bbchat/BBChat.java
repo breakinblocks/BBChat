@@ -8,6 +8,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -136,8 +137,11 @@ public class BBChat {
         if (!(living instanceof PlayerEntity)) return;
         final World world = living.getEntityWorld();
         if (!world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) return;
-        ITextComponent deathMessage = living.getCombatTracker().getDeathMessage();
-        relay.onDeath(deathMessage.getFormattedText());
+        String deathMessage = living.getCombatTracker().getDeathMessage().getFormattedText();
+        String target = living.getName().getFormattedText();
+        Entity sourceEntity = event.getSource().getTrueSource();
+        String source = sourceEntity != null ? sourceEntity.getName().getFormattedText() : null;
+        relay.onDeath(deathMessage, target, source);
     }
 
     private void handleCommand(boolean isStaff, String name, String displayName, String fullCommand, Consumer<String> response) {

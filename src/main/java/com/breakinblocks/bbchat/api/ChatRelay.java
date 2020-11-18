@@ -18,12 +18,14 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 public class ChatRelay implements IRelay {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -74,6 +76,14 @@ public class ChatRelay implements IRelay {
         this.commandHandler = commandHandler;
     }
 
+    /**
+     * Case sensitive word replacement, expects boundaries on left and right.
+     */
+    private static String replaceWord(String message, String word, String replacement) {
+        final Pattern pattern = Pattern.compile("(?<=^|\\W)" + Pattern.quote(word) + "(?=$|\\W)");
+        return pattern.matcher(message).replaceAll(replacement);
+    }
+
     @SubscribeEvent
     public void relayDiscordMessageToMinecraft(MessageReceivedEvent event) {
         if (event.getChannelType() != ChannelType.TEXT) return;
@@ -106,7 +116,6 @@ public class ChatRelay implements IRelay {
         LOGGER.info(logName + " is running the command `" + fullCommand + "`");
         commandHandler.handleCommand(isStaff, name, displayName, fullCommand, this::sendToDiscord);
     }
-
 
     private void sendQueueToDiscord() {
         TextChannel channel = jda.getTextChannelById(channelId);
@@ -167,7 +176,11 @@ public class ChatRelay implements IRelay {
     }
 
     @Override
-    public void onDeath(String deathMessage) {
-        sendToDiscord(String.format("%s", deathMessage));
+    public void onDeath(String message, String target, @Nullable String source) {
+        message = replaceWord(message, target, "**" + target + "**");
+        if (source != null) {
+            message = replaceWord(message, source, "**" + source + "**");
+        }
+        sendToDiscord(message);
     }
 }

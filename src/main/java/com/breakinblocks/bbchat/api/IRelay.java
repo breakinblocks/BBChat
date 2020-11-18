@@ -1,5 +1,7 @@
 package com.breakinblocks.bbchat.api;
 
+import javax.annotation.Nullable;
+
 public interface IRelay {
     void cleanup();
 
@@ -15,5 +17,5 @@ public interface IRelay {
 
     void onAchievement(String name, String title, String description);
 
-    void onDeath(String deathMessage);
+    void onDeath(String message, String target, @Nullable String source);
 }
