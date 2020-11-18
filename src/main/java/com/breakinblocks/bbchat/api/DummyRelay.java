@@ -41,4 +41,9 @@ public class DummyRelay implements IRelay {
     public void onAchievement(String name, String title, String description) {
 
     }
+
+    @Override
+    public void onDeath(String deathMessage) {
+
+    }
 }

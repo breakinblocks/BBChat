@@ -14,4 +14,6 @@ public interface IRelay {
     void onLogout(String name);
 
     void onAchievement(String name, String title, String description);
+
+    void onDeath(String deathMessage);
 }

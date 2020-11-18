@@ -165,4 +165,9 @@ public class ChatRelay implements IRelay {
     public void onAchievement(String name, String title, String description) {
         sendToDiscord(String.format("**%s** got **%s** *%s*", name, title, description));
     }
+
+    @Override
+    public void onDeath(String deathMessage) {
+        sendToDiscord(String.format("%s", deathMessage));
+    }
 }

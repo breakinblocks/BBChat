@@ -8,15 +8,22 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -118,6 +125,19 @@ public class BBChat {
         String title = displayInfo.getTitle().getUnformattedComponentText();
         String description = displayInfo.getDescription().getUnformattedComponentText();
         relay.onAchievement(name, title, description);
+    }
+
+    /**
+     * @see ServerPlayerEntity#onDeath(DamageSource)
+     */
+    @SubscribeEvent
+    public void relayDeath(LivingDeathEvent event) {
+        final LivingEntity living = event.getEntityLiving();
+        if (!(living instanceof PlayerEntity)) return;
+        final World world = living.getEntityWorld();
+        if (!world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) return;
+        ITextComponent deathMessage = living.getCombatTracker().getDeathMessage();
+        relay.onDeath(deathMessage.getFormattedText());
     }
 
     private void handleCommand(boolean isStaff, String name, String displayName, String fullCommand, Consumer<String> response) {
