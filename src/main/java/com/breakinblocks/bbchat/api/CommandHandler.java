@@ -1,4 +1,4 @@
-package com.breakinblocks.bbchat.common;
+package com.breakinblocks.bbchat.api;
 
 import java.util.function.Consumer;
 

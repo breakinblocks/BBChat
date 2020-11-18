@@ -1,4 +1,4 @@
-package com.breakinblocks.bbchat.common;
+package com.breakinblocks.bbchat.api;
 
 import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;

@@ -1,4 +1,4 @@
-package com.breakinblocks.bbchat.common;
+package com.breakinblocks.bbchat.api;
 
 public interface IRelay {
     void cleanup();

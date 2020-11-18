@@ -1,4 +1,4 @@
-package com.breakinblocks.bbchat.common;
+package com.breakinblocks.bbchat.api;
 
 public class DummyRelay implements IRelay {
     public static final DummyRelay INSTANCE = new DummyRelay();
