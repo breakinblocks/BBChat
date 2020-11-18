@@ -1,6 +1,5 @@
 package com.breakinblocks.bbchat.common;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -31,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -45,7 +43,7 @@ public class ChatRelay implements IRelay {
     private final long guildId;
     private final long channelId;
     private final long staffRoleId;
-    private final List<String> commandPrefixes;
+    private final Set<String> commandPrefixes;
     private final Set<String> anyCommands;
     private final Set<String> staffCommands;
     private final ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
@@ -71,7 +69,7 @@ public class ChatRelay implements IRelay {
         this.guildId = serverId;
         this.channelId = channelId;
         this.staffRoleId = staffRoleId;
-        this.commandPrefixes = ImmutableList.of(commandPrefix, "<@!" + this.jda.getSelfUser().getId() + "> ");
+        this.commandPrefixes = ImmutableSet.of(commandPrefix, "<@!" + this.jda.getSelfUser().getId() + "> ");
         this.anyCommands = ImmutableSet.copyOf(anyCommands);
         this.staffCommands = ImmutableSet.<String>builder().addAll(this.anyCommands).addAll(staffCommands).build();
     }
