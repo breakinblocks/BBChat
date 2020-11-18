@@ -134,14 +134,15 @@ public class BBChat {
     @SubscribeEvent
     public void relayDeath(LivingDeathEvent event) {
         final LivingEntity living = event.getEntityLiving();
-        if (!(living instanceof PlayerEntity)) return;
-        final World world = living.getEntityWorld();
-        if (!world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) return;
-        String deathMessage = living.getCombatTracker().getDeathMessage().getFormattedText();
-        String target = living.getName().getFormattedText();
-        Entity sourceEntity = event.getSource().getTrueSource();
-        String source = sourceEntity != null ? sourceEntity.getName().getFormattedText() : null;
-        relay.onDeath(deathMessage, target, source);
+        if (living instanceof PlayerEntity || (living.hasCustomName() && event.getSource().getTrueSource() instanceof PlayerEntity)) {
+            final World world = living.getEntityWorld();
+            if (!world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) return;
+            String deathMessage = living.getCombatTracker().getDeathMessage().getFormattedText();
+            String target = living.getName().getFormattedText();
+            Entity sourceEntity = event.getSource().getTrueSource();
+            String source = sourceEntity != null ? sourceEntity.getName().getFormattedText() : null;
+            relay.onDeath(deathMessage, target, source);
+        }
     }
 
     private void handleCommand(boolean isStaff, String name, String displayName, String fullCommand, Consumer<String> response) {

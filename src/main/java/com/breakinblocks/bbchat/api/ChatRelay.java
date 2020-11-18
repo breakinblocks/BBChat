@@ -25,10 +25,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
+
+import static com.breakinblocks.bbchat.api.TextUtils.Formatting.*;
 
 public class ChatRelay implements IRelay {
     private static final Logger LOGGER = LogManager.getLogger();
+    private static final String FORMAT_CHAT = BOLD + "[%s]" + RESET + " %s";
+    private static final String FORMAT_LOGIN = BOLD + "%s" + RESET + " joined the server";
+    private static final String FORMAT_LOGOUT = BOLD + "%s" + RESET + " left the server";
+    private static final String FORMAT_ACHIEVEMENT = BOLD + "%s" + RESET + " got " + BOLD + "%s" + RESET + " " + ITALIC + "%s" + RESET;
     private final JDA jda;
     private final long guildId;
     private final long channelId;
@@ -76,14 +81,6 @@ public class ChatRelay implements IRelay {
         this.commandHandler = commandHandler;
     }
 
-    /**
-     * Case sensitive word replacement, expects boundaries on left and right.
-     */
-    private static String replaceWord(String message, String word, String replacement) {
-        final Pattern pattern = Pattern.compile("(?<=^|\\W)" + Pattern.quote(word) + "(?=$|\\W)");
-        return pattern.matcher(message).replaceAll(replacement);
-    }
-
     @SubscribeEvent
     public void relayDiscordMessageToMinecraft(MessageReceivedEvent event) {
         if (event.getChannelType() != ChannelType.TEXT) return;
@@ -114,7 +111,7 @@ public class ChatRelay implements IRelay {
         final String displayName = member.getEffectiveName();
         final String logName = member.getNickname() == null ? name : name + "/" + displayName;
         LOGGER.info(logName + " is running the command `" + fullCommand + "`");
-        commandHandler.handleCommand(isStaff, name, displayName, fullCommand, this::sendToDiscord);
+        commandHandler.handleCommand(isStaff, name, displayName, fullCommand, this::convertAndSendToDiscord);
     }
 
     private void sendQueueToDiscord() {
@@ -128,6 +125,10 @@ public class ChatRelay implements IRelay {
     private void sendToDiscord(String message) {
         messageQueue.add(message);
         sendQueueToDiscord();
+    }
+
+    private void convertAndSendToDiscord(String text) {
+        sendToDiscord(TextUtils.convertToDiscord(text));
     }
 
     @SubscribeEvent
@@ -157,30 +158,30 @@ public class ChatRelay implements IRelay {
 
     @Override
     public void onChat(String name, String text) {
-        sendToDiscord(String.format("**[%s]** %s", name, text));
+        convertAndSendToDiscord(String.format(FORMAT_CHAT, name, text));
     }
 
     @Override
     public void onLogin(String name) {
-        sendToDiscord(String.format("**%s** joined the server", name));
+        convertAndSendToDiscord(String.format(FORMAT_LOGIN, name));
     }
 
     @Override
     public void onLogout(String name) {
-        sendToDiscord(String.format("**%s** left the server", name));
+        convertAndSendToDiscord(String.format(FORMAT_LOGOUT, name));
     }
 
     @Override
     public void onAchievement(String name, String title, String description) {
-        sendToDiscord(String.format("**%s** got **%s** *%s*", name, title, description));
+        convertAndSendToDiscord(String.format(FORMAT_ACHIEVEMENT, name, title, description));
     }
 
     @Override
     public void onDeath(String message, String target, @Nullable String source) {
-        message = replaceWord(message, target, "**" + target + "**");
+        message = TextUtils.replaceWord(message, target, BOLD + target + RESET);
         if (source != null) {
-            message = replaceWord(message, source, "**" + source + "**");
+            message = TextUtils.replaceWord(message, source, BOLD + source + RESET);
         }
-        sendToDiscord(message);
+        convertAndSendToDiscord(message);
     }
 }
