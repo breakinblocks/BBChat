@@ -100,20 +100,20 @@ public class BBChat {
 
     @SubscribeEvent
     public void relayChat(ServerChatEvent event) {
-        String name = event.getPlayer().getName().getUnformattedComponentText();
+        String name = event.getPlayer().getName().getFormattedText();
         String text = event.getMessage();
         relay.onChat(name, text);
     }
 
     @SubscribeEvent
     public void relayLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        String name = event.getPlayer().getName().getUnformattedComponentText();
+        String name = event.getPlayer().getName().getFormattedText();
         relay.onLogin(name);
     }
 
     @SubscribeEvent
     public void relayLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        String name = event.getPlayer().getName().getUnformattedComponentText();
+        String name = event.getPlayer().getName().getFormattedText();
         relay.onLogout(name);
     }
 
@@ -122,9 +122,9 @@ public class BBChat {
         Advancement advancement = event.getAdvancement();
         DisplayInfo displayInfo = advancement.getDisplay();
         if (displayInfo == null) return;
-        String name = event.getPlayer().getName().getUnformattedComponentText();
-        String title = displayInfo.getTitle().getUnformattedComponentText();
-        String description = displayInfo.getDescription().getUnformattedComponentText();
+        String name = event.getPlayer().getName().getFormattedText();
+        String title = displayInfo.getTitle().getFormattedText();
+        String description = displayInfo.getDescription().getFormattedText();
         relay.onAchievement(name, title, description);
     }
 
