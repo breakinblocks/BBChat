@@ -27,7 +27,6 @@ public class BBChatConfig {
         public final LongValue staffRoleId;
         public final ConfigValue<String> commandPrefix;
         public final ConfigValue<List<? extends String>> anyCommands;
-        public final ConfigValue<List<? extends String>> staffCommands;
 
         public Common(Builder builder) {
             botToken = builder
@@ -41,7 +40,7 @@ public class BBChatConfig {
                     .defineInRange("channelId", 0L, Long.MIN_VALUE, Long.MAX_VALUE);
             staffRoleId = builder
                     .worldRestart()
-                    .comment("Staff will run commands with OP level defined in server.properties. Otherwise level 0.")
+                    .comment("Staff can run all commands with OP level defined in server.properties.")
                     .defineInRange("staffRoleId", 0L, Long.MIN_VALUE, Long.MAX_VALUE);
             commandPrefix = builder
                     .worldRestart()
@@ -51,10 +50,6 @@ public class BBChatConfig {
                     .worldRestart()
                     .comment("Anyone can use these commands. Will be run with OP Level 0 (non-operator) if not staff.")
                     .defineList("anyCommands", Arrays.asList("list", "forge"), Objects::nonNull);
-            staffCommands = builder
-                    .worldRestart()
-                    .comment("Only staff can use these commands.")
-                    .defineList("staffCommands", Arrays.asList("stop", "op", "deop", "whitelist", "kick", "ban", "pardon"), Objects::nonNull);
         }
     }
 }

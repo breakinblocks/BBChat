@@ -40,7 +40,6 @@ public class ChatRelay implements IRelay {
     private final long staffRoleId;
     private final Set<String> commandPrefixes;
     private final Set<String> anyCommands;
-    private final Set<String> staffCommands;
     private final ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
     private final Consumer<String> broadcastMessage;
     private final CommandHandler commandHandler;
@@ -52,7 +51,6 @@ public class ChatRelay implements IRelay {
             long staffRoleId,
             String commandPrefix,
             Collection<String> anyCommands,
-            Collection<String> staffCommands,
             Consumer<String> broadcastMessage,
             CommandHandler commandHandler
     ) throws LoginException {
@@ -76,7 +74,6 @@ public class ChatRelay implements IRelay {
         this.staffRoleId = staffRoleId;
         this.commandPrefixes = ImmutableSet.of(commandPrefix, "<@!" + this.jda.getSelfUser().getId() + "> ");
         this.anyCommands = ImmutableSet.copyOf(anyCommands);
-        this.staffCommands = ImmutableSet.<String>builder().addAll(this.anyCommands).addAll(staffCommands).build();
         this.broadcastMessage = broadcastMessage;
         this.commandHandler = commandHandler;
     }
@@ -100,18 +97,18 @@ public class ChatRelay implements IRelay {
         final String prefix = commandPrefixes.stream().filter(rawMessage::startsWith).findAny().orElse(null);
         // Starts with the prefix or mentions the relay
         if (prefix == null) return;
-        final String fullCommand = rawMessage.substring(prefix.length());
+        final String fullCommand = rawMessage.substring(prefix.length()).trim();
         final boolean isStaff = member.getRoles().stream().anyMatch(role -> role.getIdLong() == staffRoleId);
-        final Set<String> commands = isStaff ? staffCommands : this.anyCommands;
         final String commandRoot = fullCommand.split(" ", 2)[0];
-        // Check that the base command is allowed
-        if (!commands.contains(commandRoot)) return;
-        // Run command
-        final String name = member.getUser().getAsTag() + " (" + member.getId() + ")";
-        final String displayName = member.getEffectiveName();
-        final String logName = member.getNickname() == null ? name : name + "/" + displayName;
-        LOGGER.info(logName + " is running the command `" + fullCommand + "`");
-        commandHandler.handleCommand(isStaff, name, displayName, fullCommand, this::convertAndSendToDiscord);
+        // Check that it is a staff member or the command is allowed for anyone
+        if (isStaff || this.anyCommands.contains(commandRoot)) {
+            // Run command
+            final String name = member.getUser().getAsTag() + " (" + member.getId() + ")";
+            final String displayName = member.getEffectiveName();
+            final String logName = member.getNickname() == null ? name : name + "/" + displayName;
+            LOGGER.info(logName + " is running the command `" + fullCommand + "`");
+            commandHandler.handleCommand(isStaff, name, displayName, fullCommand, this::convertAndSendToDiscord);
+        }
     }
 
     private void sendQueueToDiscord() {

@@ -72,7 +72,6 @@ public class BBChat {
                     BBChatConfig.COMMON.staffRoleId.get(),
                     BBChatConfig.COMMON.commandPrefix.get(),
                     BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
-                    BBChatConfig.COMMON.staffCommands.get().stream().map(String::toString).collect(Collectors.toList()),
                     (msg) -> server.getPlayerList().sendMessage(new StringTextComponent(msg), false),
                     this::handleCommand
             );
