@@ -146,6 +146,11 @@ public class BBChat {
 
     private void handleCommand(boolean isStaff, String name, String displayName, String fullCommand, Consumer<String> response) {
         if (server == null) return;
+        // Execute on the main server thread
+        if (!server.isOnExecutionThread()) {
+            server.execute(() -> handleCommand(isStaff, name, displayName, fullCommand, response));
+            return;
+        }
         // Create a command source with the correct level
         final int opLevel = isStaff ? server.getOpPermissionLevel() : 0;
         CommandSource source = new CommandSource(
