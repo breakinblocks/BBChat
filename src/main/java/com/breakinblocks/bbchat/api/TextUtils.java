@@ -12,6 +12,7 @@ public class TextUtils {
     private static final Pattern MC_FORMATTING_CODES_INCOMPATIBLE = Pattern.compile("\u00a7([0-9a-fk])", Pattern.CASE_INSENSITIVE);
     private static final Pattern MC_FORMATTING_CODES_COMPATIBLE = Pattern.compile("\u00a7([lmnor])", Pattern.CASE_INSENSITIVE);
     private static final Pattern MC_FORMATTING_CODES_RESET = Pattern.compile("\u00a7(r)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern MC_FORMATTING_CODES_REDUNDANT = Pattern.compile("(?:\u00a7[0-9a-fklmnor])+?(?=\u00a7r|$)");
 
     /**
      * Remove all Minecraft formatting codes
@@ -62,9 +63,13 @@ public class TextUtils {
      * Do not pass any reset codes in
      */
     private static String convertToDiscordNoReset(String input) {
-        Matcher matcher = MC_FORMATTING_CODES_COMPATIBLE.matcher(input);
+        // Remove formatting codes that have no text to operate on
+        String cleaned = MC_FORMATTING_CODES_REDUNDANT.matcher(input).replaceAll("");
+        // Convert formatting codes to Discord
+        Matcher matcher = MC_FORMATTING_CODES_COMPATIBLE.matcher(cleaned);
         StringBuffer buff = new StringBuffer();
         Set<Formatting> formatting = new HashSet<>();
+        LinkedList<Formatting> formattingStack = new LinkedList<>();
         while (matcher.find()) {
             String code = matcher.group(1);
             Formatting fm = Objects.requireNonNull(Formatting.fromMc(code)); // Should not be null
@@ -73,15 +78,15 @@ public class TextUtils {
                 replacement = "";
             } else {
                 replacement = fm.dc;
+                formatting.add(fm);
+                formattingStack.push(fm);
             }
-            formatting.add(fm);
             matcher.appendReplacement(buff, replacement);
         }
         matcher.appendTail(buff);
-        for (Formatting fm : Formatting.values()) {
-            if (formatting.contains(fm)) {
-                buff.append(fm.dc);
-            }
+        // Append the closing codes
+        while (!formattingStack.isEmpty()) {
+            buff.append(formattingStack.pop().dc);
         }
         return buff.toString();
     }
