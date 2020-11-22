@@ -1,0 +1,4 @@
+rootProject.name = 'bbchat'
+
+include 'bbchat-common'
+include 'bbchat-forge'

@@ -2,6 +2,6 @@
 @MethodsReturnNonnullByDefault
 package com.breakinblocks.bbchat.forge;
 
-import mcp.MethodsReturnNonnullByDefault;
+import com.breakinblocks.bbchat.common.MethodsReturnNonnullByDefault;
 
 import javax.annotation.ParametersAreNonnullByDefault;

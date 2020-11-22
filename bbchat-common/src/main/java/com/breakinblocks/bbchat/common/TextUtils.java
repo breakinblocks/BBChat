@@ -1,4 +1,4 @@
-package com.breakinblocks.bbchat.api;
+package com.breakinblocks.bbchat.common;
 
 import javax.annotation.Nullable;
 import java.util.*;

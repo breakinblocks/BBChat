@@ -1,9 +1,8 @@
-package com.breakinblocks.bbchat;
+package com.breakinblocks.bbchat.forge;
 
-import com.breakinblocks.bbchat.api.ChatRelay;
-import com.breakinblocks.bbchat.api.DummyRelay;
-import com.breakinblocks.bbchat.api.IRelay;
-import com.breakinblocks.bbchat.common.BBChatConfig;
+import com.breakinblocks.bbchat.common.ChatRelay;
+import com.breakinblocks.bbchat.common.DummyRelay;
+import com.breakinblocks.bbchat.common.IRelay;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.command.CommandSource;
@@ -42,8 +41,8 @@ import net.minecraftforge.fml.network.FMLNetworkConstants;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.security.auth.login.LoginException;
 import java.util.Objects;
 import java.util.UUID;
@@ -167,7 +166,7 @@ public class BBChat {
         server.getCommandManager().handleCommand(source, fullCommand);
     }
 
-    @NotNull
+    @Nonnull
     private ICommandSource getConsumerSource(Consumer<String> consumer) {
         return new ICommandSource() {
             @Override

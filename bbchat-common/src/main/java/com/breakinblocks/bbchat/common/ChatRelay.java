@@ -1,4 +1,4 @@
-package com.breakinblocks.bbchat.api;
+package com.breakinblocks.bbchat.common;
 
 import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
-import static com.breakinblocks.bbchat.api.TextUtils.Formatting.*;
+import static com.breakinblocks.bbchat.common.TextUtils.Formatting.*;
 
 public class ChatRelay implements IRelay {
     private static final Logger LOGGER = LogManager.getLogger();
