@@ -1,6 +1,6 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package com.breakinblocks.bbchat.api;
+package com.breakinblocks.bbchat.forge;
 
 import mcp.MethodsReturnNonnullByDefault;
 
