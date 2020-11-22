@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[${forge_version_major},)"
+loaderVersion="${forge_version_range_supported}"
 license="MIT"
 issueTrackerURL="https://github.com/breakinblocks/BBChat/issues"
 
@@ -15,11 +15,13 @@ issueTrackerURL="https://github.com/breakinblocks/BBChat/issues"
 [[dependencies.bbchat]]
     modId="forge"
     mandatory=true
-    versionRange="[${forge_version_major},)"
+    versionRange="${forge_version_range_supported}"
+    ordering="AFTER"
     side="BOTH"
 
 [[dependencies.bbchat]]
     modId="minecraft"
     mandatory=true
-    versionRange="[${mc_version}]"
+    versionRange="${mc_version_range_supported}"
+    ordering="AFTER"
     side="BOTH"

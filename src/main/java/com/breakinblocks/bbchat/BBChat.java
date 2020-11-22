@@ -14,14 +14,16 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -44,6 +46,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -72,7 +75,7 @@ public class BBChat {
                     BBChatConfig.COMMON.staffRoleId.get(),
                     BBChatConfig.COMMON.commandPrefix.get(),
                     BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
-                    (msg) -> server.getPlayerList().sendMessage(new StringTextComponent(msg), false),
+                    (msg) -> server.getPlayerList().func_232641_a_(new StringTextComponent(msg), ChatType.CHAT, Util.DUMMY_UUID),
                     this::handleCommand
             );
         } catch (LoginException e) {
@@ -99,20 +102,20 @@ public class BBChat {
 
     @SubscribeEvent
     public void relayChat(ServerChatEvent event) {
-        String name = event.getPlayer().getName().getFormattedText();
+        String name = event.getPlayer().getName().getString();
         String text = event.getMessage();
         relay.onChat(name, text);
     }
 
     @SubscribeEvent
     public void relayLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        String name = event.getPlayer().getName().getFormattedText();
+        String name = event.getPlayer().getName().getString();
         relay.onLogin(name);
     }
 
     @SubscribeEvent
     public void relayLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        String name = event.getPlayer().getName().getFormattedText();
+        String name = event.getPlayer().getName().getString();
         relay.onLogout(name);
     }
 
@@ -121,9 +124,9 @@ public class BBChat {
         Advancement advancement = event.getAdvancement();
         DisplayInfo displayInfo = advancement.getDisplay();
         if (displayInfo == null) return;
-        String name = event.getPlayer().getName().getFormattedText();
-        String title = displayInfo.getTitle().getFormattedText();
-        String description = displayInfo.getDescription().getFormattedText();
+        String name = event.getPlayer().getName().getString();
+        String title = displayInfo.getTitle().getString();
+        String description = displayInfo.getDescription().getString();
         relay.onAchievement(name, title, description);
     }
 
@@ -136,10 +139,10 @@ public class BBChat {
         if (living instanceof PlayerEntity || (living.hasCustomName() && event.getSource().getTrueSource() instanceof PlayerEntity)) {
             final World world = living.getEntityWorld();
             if (!world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) return;
-            String deathMessage = living.getCombatTracker().getDeathMessage().getFormattedText();
-            String target = living.getName().getFormattedText();
+            String deathMessage = living.getCombatTracker().getDeathMessage().getString();
+            String target = living.getName().getString();
             Entity sourceEntity = event.getSource().getTrueSource();
-            String source = sourceEntity != null ? sourceEntity.getName().getFormattedText() : null;
+            String source = sourceEntity != null ? sourceEntity.getName().getString() : null;
             relay.onDeath(deathMessage, target, source);
         }
     }
@@ -153,9 +156,10 @@ public class BBChat {
         }
         // Create a command source with the correct level
         final int opLevel = isStaff ? server.getOpPermissionLevel() : 0;
+        ServerWorld serverWorld = server.func_241755_D_();
         CommandSource source = new CommandSource(
                 getConsumerSource(response),
-                Vec3d.ZERO, Vec2f.ZERO, server.getWorld(DimensionType.OVERWORLD), // TODO: Make dynamic
+                Vector3d.copy(serverWorld.getSpawnPoint()), Vector2f.ZERO, serverWorld, // TODO: Make dynamic
                 opLevel,
                 name, new StringTextComponent(displayName),
                 this.server, null
@@ -167,8 +171,8 @@ public class BBChat {
     private ICommandSource getConsumerSource(Consumer<String> consumer) {
         return new ICommandSource() {
             @Override
-            public void sendMessage(ITextComponent component) {
-                final String message = Objects.requireNonNull(TextFormatting.getTextWithoutFormattingCodes(component.getFormattedText()));
+            public void sendMessage(ITextComponent component, UUID senderUUID) {
+                final String message = Objects.requireNonNull(TextFormatting.getTextWithoutFormattingCodes(component.getString()));
                 if (message.length() > 0) {
                     consumer.accept(message);
                 }
