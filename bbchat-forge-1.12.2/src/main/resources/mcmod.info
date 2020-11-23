@@ -1,0 +1,14 @@
+[
+  {
+    "modid": "bbchat",
+    "name": "BBChat",
+    "description": "Chat relay for Minecraft and Discord",
+    "version": "${mod_version}",
+    "mcversion": "${mc_version}",
+    "url": "https://github.com/breakinblocks/BBChat",
+    "authorList": [
+      "BBChat contributors"
+    ],
+    "credits": "https://github.com/breakinblocks/BBChat/graphs/contributors"
+  }
+]
