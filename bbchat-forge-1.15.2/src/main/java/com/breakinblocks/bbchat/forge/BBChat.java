@@ -13,14 +13,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ChatType;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ServerChatEvent;
@@ -43,7 +42,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.security.auth.login.LoginException;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -72,7 +70,7 @@ public class BBChat {
                     BBChatConfig.COMMON.staffRoleId.get(),
                     BBChatConfig.COMMON.commandPrefix.get(),
                     BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
-                    (msg) -> server.getPlayerList().func_232641_a_(new StringTextComponent(msg), ChatType.CHAT, Util.DUMMY_UUID),
+                    (msg) -> server.getPlayerList().sendMessage(new StringTextComponent(msg), false),
                     this::handleCommand
             );
         } catch (LoginException e) {
@@ -153,10 +151,10 @@ public class BBChat {
         }
         // Create a command source with the correct level
         final int opLevel = isStaff ? server.getOpPermissionLevel() : 0;
-        ServerWorld serverWorld = server.func_241755_D_();
+        ServerWorld serverWorld = server.getWorld(DimensionType.OVERWORLD);
         CommandSource source = new CommandSource(
                 getConsumerSource(response),
-                Vector3d.copy(serverWorld.getSpawnPoint()), Vector2f.ZERO, serverWorld, // TODO: Make dynamic
+                new Vec3d(serverWorld.getSpawnPoint()), Vec2f.ZERO, serverWorld, // TODO: Make dynamic
                 opLevel,
                 name, new StringTextComponent(displayName),
                 this.server, null
@@ -168,8 +166,8 @@ public class BBChat {
     private ICommandSource getConsumerSource(Consumer<String> consumer) {
         return new ICommandSource() {
             @Override
-            public void sendMessage(ITextComponent component, UUID senderUUID) {
-                consumer.accept(component.getString());
+            public void sendMessage(ITextComponent component) {
+                consumer.accept(component.getFormattedText());
             }
 
             @Override

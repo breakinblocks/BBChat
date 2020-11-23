@@ -2,3 +2,4 @@ rootProject.name = 'bbchat'
 
 include 'bbchat-common'
 include 'bbchat-forge'
+include 'bbchat-forge-1.15.2'

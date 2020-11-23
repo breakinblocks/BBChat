@@ -1,3 +1,5 @@
+logs/
+
 # eclipse
 bin
 *.launch
