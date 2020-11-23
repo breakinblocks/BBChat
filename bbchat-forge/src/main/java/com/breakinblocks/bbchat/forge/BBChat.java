@@ -130,7 +130,7 @@ public class BBChat {
     /**
      * @see ServerPlayerEntity#onDeath(DamageSource)
      */
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void relayDeath(LivingDeathEvent event) {
         final LivingEntity living = event.getEntityLiving();
         if (living instanceof PlayerEntity || (living.hasCustomName() && event.getSource().getTrueSource() instanceof PlayerEntity)) {
