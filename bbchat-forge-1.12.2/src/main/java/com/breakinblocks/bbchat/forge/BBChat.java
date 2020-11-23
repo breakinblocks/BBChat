@@ -8,7 +8,6 @@ import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
@@ -18,6 +17,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
@@ -132,7 +132,7 @@ public class BBChat {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void relayDeath(LivingDeathEvent event) {
         final EntityLivingBase living = event.getEntityLiving();
-        if (living instanceof EntityPlayer || (living.hasCustomName() && event.getSource().getTrueSource() instanceof EntityPlayer)) {
+        if (isRealPlayer(living) || (living.hasCustomName() && isRealPlayer(event.getSource().getTrueSource()))) {
             final World world = living.getEntityWorld();
             if (!world.getGameRules().getBoolean("showDeathMessages")) return;
             String deathMessage = living.getCombatTracker().getDeathMessage().getFormattedText();
@@ -141,6 +141,13 @@ public class BBChat {
             String source = sourceEntity != null ? sourceEntity.getName() : null;
             relay.onDeath(deathMessage, target, source);
         }
+    }
+
+    public boolean isRealPlayer(@Nullable Entity entity) {
+        if (!(entity instanceof EntityPlayerMP)) return false;
+        EntityPlayerMP player = (EntityPlayerMP) entity;
+        if (player instanceof FakePlayer) return false;
+        return player.connection != null;
     }
 
     private void handleCommand(boolean isStaff, String name, String displayName, String fullCommand, Consumer<String> response) {

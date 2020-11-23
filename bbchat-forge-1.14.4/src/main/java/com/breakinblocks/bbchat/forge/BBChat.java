@@ -22,6 +22,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
@@ -41,6 +42,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -131,7 +133,7 @@ public class BBChat {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void relayDeath(LivingDeathEvent event) {
         final LivingEntity living = event.getEntityLiving();
-        if (living instanceof PlayerEntity || (living.hasCustomName() && event.getSource().getTrueSource() instanceof PlayerEntity)) {
+        if (isRealPlayer(living) || (living.hasCustomName() && isRealPlayer(event.getSource().getTrueSource()))) {
             final World world = living.getEntityWorld();
             if (!world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) return;
             String deathMessage = living.getCombatTracker().getDeathMessage().getString();
@@ -140,6 +142,13 @@ public class BBChat {
             String source = sourceEntity != null ? sourceEntity.getName().getString() : null;
             relay.onDeath(deathMessage, target, source);
         }
+    }
+
+    public boolean isRealPlayer(@Nullable Entity entity) {
+        if (!(entity instanceof ServerPlayerEntity)) return false;
+        ServerPlayerEntity player = (ServerPlayerEntity) entity;
+        if (player instanceof FakePlayer) return false;
+        return player.connection != null;
     }
 
     private void handleCommand(boolean isStaff, String name, String displayName, String fullCommand, Consumer<String> response) {
