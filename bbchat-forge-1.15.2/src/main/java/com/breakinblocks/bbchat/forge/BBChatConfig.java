@@ -3,7 +3,6 @@ package com.breakinblocks.bbchat.forge;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.Builder;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
-import net.minecraftforge.common.ForgeConfigSpec.LongValue;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Arrays;
@@ -22,9 +21,9 @@ public class BBChatConfig {
 
     public static class Common {
         public final ConfigValue<String> botToken;
-        public final LongValue guildId;
-        public final LongValue channelId;
-        public final LongValue staffRoleId;
+        public final ConfigValue<String> guildId;
+        public final ConfigValue<String> channelId;
+        public final ConfigValue<String> staffRoleId;
         public final ConfigValue<String> commandPrefix;
         public final ConfigValue<List<? extends String>> anyCommands;
 
@@ -34,14 +33,14 @@ public class BBChatConfig {
                     .define("botToken", "<token>");
             guildId = builder
                     .worldRestart()
-                    .defineInRange("guildId", 0L, Long.MIN_VALUE, Long.MAX_VALUE);
+                    .define("guildId", "0");
             channelId = builder
                     .worldRestart()
-                    .defineInRange("channelId", 0L, Long.MIN_VALUE, Long.MAX_VALUE);
+                    .define("channelId", "0");
             staffRoleId = builder
                     .worldRestart()
                     .comment("Staff can run all commands with OP level defined in server.properties.")
-                    .defineInRange("staffRoleId", 0L, Long.MIN_VALUE, Long.MAX_VALUE);
+                    .define("staffRoleId", "0");
             commandPrefix = builder
                     .worldRestart()
                     .comment("Commands must be prefixed with this (can also start with a direct mention).")

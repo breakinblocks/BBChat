@@ -65,7 +65,7 @@ public class BBChat {
     public void relayInit(FMLServerStartingEvent event) {
         server = event.getServer();
         try {
-            relay = new ChatRelay(
+            relay = ChatRelay.create(
                     BBChatConfig.COMMON.botToken.get(),
                     BBChatConfig.COMMON.guildId.get(),
                     BBChatConfig.COMMON.channelId.get(),

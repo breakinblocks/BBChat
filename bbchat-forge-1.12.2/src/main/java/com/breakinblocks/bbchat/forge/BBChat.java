@@ -23,6 +23,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
@@ -59,14 +60,19 @@ public class BBChat {
     }
 
     @EventHandler
+    public void preInit(FMLPreInitializationEvent event) {
+        BBChatConfig.init(event.getSuggestedConfigurationFile());
+    }
+
+    @EventHandler
     public void relayInit(FMLServerStartingEvent event) {
         server = event.getServer();
         try {
-            relay = new ChatRelay(
+            relay = ChatRelay.create(
                     BBChatConfig.botToken,
-                    Long.parseUnsignedLong(BBChatConfig.guildId),
-                    Long.parseUnsignedLong(BBChatConfig.channelId),
-                    Long.parseUnsignedLong(BBChatConfig.staffRoleId),
+                    BBChatConfig.guildId,
+                    BBChatConfig.channelId,
+                    BBChatConfig.staffRoleId,
                     BBChatConfig.commandPrefix,
                     Arrays.stream(BBChatConfig.anyCommands).map(String::toString).collect(Collectors.toList()),
                     (msg) -> server.getPlayerList().sendMessage(new TextComponentString(msg), false),

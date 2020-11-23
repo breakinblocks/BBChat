@@ -44,9 +44,9 @@ public class ChatRelay implements IRelay {
     private final Consumer<String> broadcastMessage;
     private final CommandHandler commandHandler;
 
-    public ChatRelay(
+    private ChatRelay(
             String botToken,
-            long serverId,
+            long guildId,
             long channelId,
             long staffRoleId,
             String commandPrefix,
@@ -69,13 +69,41 @@ public class ChatRelay implements IRelay {
                 .setEventManager(new AnnotatedEventManager())
                 .addEventListeners(this)
                 .build();
-        this.guildId = serverId;
+        this.guildId = guildId;
         this.channelId = channelId;
         this.staffRoleId = staffRoleId;
         this.commandPrefixes = ImmutableSet.of(commandPrefix, "<@!" + this.jda.getSelfUser().getId() + "> ");
         this.anyCommands = ImmutableSet.copyOf(anyCommands);
         this.broadcastMessage = broadcastMessage;
         this.commandHandler = commandHandler;
+    }
+
+    public static IRelay create(
+            String botToken,
+            String guildId,
+            String channelId,
+            String staffRoleId,
+            String commandPrefix,
+            Collection<String> anyCommands,
+            Consumer<String> broadcastMessage,
+            CommandHandler commandHandler
+    ) throws LoginException {
+        long guildIdL = parseULongOrZero(guildId, "guildId");
+        long channelIdL = parseULongOrZero(channelId, "channelId");
+        long staffRoleIdL = parseULongOrZero(staffRoleId, "staffRoleId");
+        return new ChatRelay(botToken, guildIdL, channelIdL, staffRoleIdL, commandPrefix, anyCommands, broadcastMessage, commandHandler);
+    }
+
+    private static long parseULongOrZero(String input, String desc) {
+        try {
+            long value = Long.parseUnsignedLong(input);
+            if (value != 0)
+                LOGGER.warn(desc + " is zero");
+            return value;
+        } catch (NumberFormatException ignored) {
+            LOGGER.warn(desc + " failed to parse as unsigned long");
+        }
+        return 0L;
     }
 
     @SubscribeEvent

@@ -21,15 +21,15 @@ public class BBChatConfig {
                 "botToken", Configuration.CATEGORY_GENERAL, "",
                 "Discord bot token");
         guildId = config.getString(
-                "guildId", Configuration.CATEGORY_GENERAL, "",
+                "guildId", Configuration.CATEGORY_GENERAL, "0",
                 "Discord guild ID"
         );
         channelId = config.getString(
-                "channelId", Configuration.CATEGORY_GENERAL, "",
+                "channelId", Configuration.CATEGORY_GENERAL, "0",
                 "Discord channel ID"
         );
         staffRoleId = config.getString(
-                "staffRoleId", Configuration.CATEGORY_GENERAL, "",
+                "staffRoleId", Configuration.CATEGORY_GENERAL, "0",
                 "Staff can run all commands with OP level defined in server.properties."
         );
         commandPrefix = config.getString(
