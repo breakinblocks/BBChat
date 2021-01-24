@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -22,9 +23,12 @@ import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.breakinblocks.bbchat.common.TextUtils.Formatting.*;
 
@@ -34,6 +38,7 @@ public class ChatRelay implements IRelay {
     private static final String FORMAT_LOGIN = BOLD + "%s" + RESET + " joined the server";
     private static final String FORMAT_LOGOUT = BOLD + "%s" + RESET + " left the server";
     private static final String FORMAT_ACHIEVEMENT = BOLD + "%s" + RESET + " got " + BOLD + "%s" + RESET + " " + ITALIC + "%s" + RESET;
+    private static final Pattern REGEX_EMOTE = Pattern.compile(":([A-Za-z0-9_]{2,32}):");
     private final JDA jda;
     private final long guildId;
     private final long channelId;
@@ -97,7 +102,7 @@ public class ChatRelay implements IRelay {
     private static long parseULongOrZero(String input, String desc) {
         try {
             long value = Long.parseUnsignedLong(input);
-            if (value != 0)
+            if (value == 0)
                 LOGGER.warn(desc + " is zero");
             return value;
         } catch (NumberFormatException ignored) {
@@ -142,9 +147,21 @@ public class ChatRelay implements IRelay {
     private void sendQueueToDiscord() {
         TextChannel channel = jda.getTextChannelById(channelId);
         if (channel == null) return;
-        for (String message = messageQueue.poll(); message != null; message = messageQueue.poll()) {
+        for (CharSequence message = messageQueue.poll(); message != null; message = messageQueue.poll()) {
+            replaceEmotes(message);
             channel.sendMessage(message).submit();
         }
+    }
+
+    private CharSequence replaceEmotes(CharSequence message) {
+        Matcher matcher = REGEX_EMOTE.matcher(message);
+        StringBuffer buff = new StringBuffer();
+        while (matcher.find()) {
+            Optional<Emote> emote = jda.getEmotesByName(matcher.group(1), false).stream().findFirst();
+            matcher.appendReplacement(buff, emote.map(Emote::getAsMention).orElseGet(matcher::group));
+        }
+        matcher.appendTail(buff);
+        return buff;
     }
 
     private void sendToDiscord(String message) {
