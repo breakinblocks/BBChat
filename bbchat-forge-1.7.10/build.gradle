@@ -52,6 +52,12 @@ processResources {
     }
 }
 
+jar {
+    manifest {
+        attributes 'FMLAT': 'bbchat_at.cfg'
+    }
+}
+
 shadowJar {
     classifier = 'forge'
     dependencies {

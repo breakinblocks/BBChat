@@ -3,6 +3,7 @@ package com.breakinblocks.bbchat.forge;
 import com.breakinblocks.bbchat.common.ChatRelay;
 import com.breakinblocks.bbchat.common.DummyRelay;
 import com.breakinblocks.bbchat.common.IRelay;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -21,10 +22,15 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.Achievement;
+import net.minecraft.stats.StatBase;
+import net.minecraft.stats.StatisticsFile;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
@@ -37,8 +43,8 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.util.Arrays;
+import java.util.IllegalFormatException;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -62,6 +68,7 @@ public class BBChat {
     private LinkedList<Callable<Object>> taskQueue = new LinkedList<>();
 
     public BBChat() {
+        FMLCommonHandler.instance().bus().register(this);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -75,7 +82,6 @@ public class BBChat {
         server = event.getServer();
         serverThread = Thread.currentThread();
         try {
-            //noinspection unchecked
             relay = ChatRelay.create(
                     BBChatConfig.botToken,
                     BBChatConfig.guildId,
@@ -83,7 +89,7 @@ public class BBChat {
                     BBChatConfig.staffRoleId,
                     BBChatConfig.commandPrefix,
                     Arrays.stream(BBChatConfig.anyCommands).map(String::toString).collect(Collectors.toList()),
-                    msg -> ((List<EntityPlayerMP>) server.getConfigurationManager().playerEntityList).forEach(player -> player.addChatMessage(new ChatComponentText(msg))),
+                    msg -> server.getConfigurationManager().sendChatMsgImpl(new ChatComponentText(msg), false),
                     this::handleCommand
             );
         } catch (LoginException e) {
@@ -123,15 +129,92 @@ public class BBChat {
         relay.onLogout(name);
     }
 
+    /**
+     * Server side version of
+     *
+     * @see ChatStyle#getFormattingCode();
+     */
+    private String getFormattingCode(ChatStyle style) {
+        if (style.isEmpty()) {
+            return "";
+        } else {
+            StringBuilder stringbuilder = new StringBuilder();
+
+            if (style.getColor() != null) {
+                stringbuilder.append(style.getColor());
+            }
+
+            if (style.getBold()) {
+                stringbuilder.append(EnumChatFormatting.BOLD);
+            }
+
+            if (style.getItalic()) {
+                stringbuilder.append(EnumChatFormatting.ITALIC);
+            }
+
+            if (style.getUnderlined()) {
+                stringbuilder.append(EnumChatFormatting.UNDERLINE);
+            }
+
+            if (style.getObfuscated()) {
+                stringbuilder.append(EnumChatFormatting.OBFUSCATED);
+            }
+
+            if (style.getStrikethrough()) {
+                stringbuilder.append(EnumChatFormatting.STRIKETHROUGH);
+            }
+
+            return stringbuilder.toString();
+        }
+    }
+
+    /**
+     * Server side version of
+     *
+     * @see IChatComponent#getFormattedText()
+     */
+    private String getFormattedText(IChatComponent component) {
+        StringBuilder stringbuilder = new StringBuilder();
+
+        for (Object o : component) {
+            IChatComponent ichatcomponent = (IChatComponent) o;
+            stringbuilder.append(getFormattingCode(ichatcomponent.getChatStyle()));
+            stringbuilder.append(ichatcomponent.getUnformattedTextForChat());
+            stringbuilder.append(EnumChatFormatting.RESET);
+        }
+
+        return stringbuilder.toString();
+    }
+
+    /**
+     * Server side version of
+     *
+     * @see Achievement#getDescription()
+     */
+    private String getDescription(Achievement achievement) {
+        String translated = StatCollector.translateToLocal(achievement.achievementDescription);
+        try {
+            if (achievement.statId.equals("achievement.openInventory")) {
+                return String.format(translated, 'E');
+            }
+        } catch (IllegalFormatException ignored) {
+        }
+        return translated;
+    }
+
+    /**
+     * @see StatisticsFile#func_150873_a(EntityPlayer, StatBase, int)
+     */
     @SubscribeEvent
     public void relayAchievement(AchievementEvent event) {
+        boolean alreadyObtained = false;
         Achievement achievement = event.achievement;
-        achievement.isAchievement();
-        if (!achievement.isAchievement()) return;
-        String name = event.entityPlayer.getDisplayName();
-        String title = achievement.func_150951_e().getFormattedText();
-        String description = achievement.getDescription();
-        relay.onAchievement(name, title, description);
+        if (!server.getConfigurationManager().func_152602_a(event.entityPlayer).hasAchievementUnlocked(achievement)) {
+            String name = event.entityPlayer.getDisplayName();
+            String title = getFormattedText(achievement.func_150951_e());
+            String description = getDescription(achievement);
+            relay.onAchievement(name, title, description);
+        }
     }
 
     /**
@@ -143,7 +226,7 @@ public class BBChat {
         final World world = living.worldObj;
         if (isRealPlayer(living) || (living instanceof EntityLiving && ((EntityLiving) living).hasCustomNameTag() && isRealPlayer(event.source.getEntity()))) {
             if (!world.getGameRules().getGameRuleBooleanValue("showDeathMessages")) return;
-            String deathMessage = living.func_110142_aN().func_151521_b().getFormattedText();
+            String deathMessage = getFormattedText(living.func_110142_aN().func_151521_b());
             String target = getName(living);
             Entity sourceEntity = event.source.getSourceOfDamage();
             String source = sourceEntity != null ? getName(sourceEntity) : null;
@@ -151,14 +234,14 @@ public class BBChat {
         }
     }
 
-    public boolean isRealPlayer(@Nullable Entity entity) {
+    private boolean isRealPlayer(@Nullable Entity entity) {
         if (!(entity instanceof EntityPlayerMP)) return false;
         EntityPlayerMP player = (EntityPlayerMP) entity;
         if (player instanceof FakePlayer) return false;
         return player.playerNetServerHandler != null;
     }
 
-    public String getName(Entity entity) {
+    private String getName(Entity entity) {
         if (entity instanceof EntityPlayer) {
             return ((EntityPlayer) entity).getDisplayName();
         }
@@ -192,7 +275,7 @@ public class BBChat {
 
             @Override
             public void addChatMessage(IChatComponent component) {
-                response.accept(component.getFormattedText());
+                response.accept(getFormattedText(component));
             }
 
             @Override
