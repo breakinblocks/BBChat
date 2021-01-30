@@ -1,9 +1,9 @@
 package com.breakinblocks.bbchat.forge;
 
+import cpw.mods.fml.client.event.ConfigChangedEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.io.File;
 
@@ -56,7 +56,7 @@ public class BBChatConfig {
     public static class Listener {
         @SubscribeEvent
         public void reloadConfig(ConfigChangedEvent.OnConfigChangedEvent event) {
-            if (!event.getModID().equals(BBChat.MODID)) return;
+            if (!event.modID.equals(BBChat.MODID)) return;
             sync();
         }
     }

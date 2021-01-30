@@ -3,39 +3,43 @@ package com.breakinblocks.bbchat.forge;
 import com.breakinblocks.bbchat.common.ChatRelay;
 import com.breakinblocks.bbchat.common.DummyRelay;
 import com.breakinblocks.bbchat.common.IRelay;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.DisplayInfo;
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartedEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.event.FMLServerStoppedEvent;
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.stats.Achievement;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.AdvancementEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.event.entity.player.AchievementEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -54,6 +58,8 @@ public class BBChat {
     private static final Logger LOGGER = LogManager.getLogger();
     private IRelay relay = DummyRelay.INSTANCE;
     private MinecraftServer server = null;
+    private Thread serverThread = null;
+    private LinkedList<Callable<Object>> taskQueue = new LinkedList<>();
 
     public BBChat() {
         MinecraftForge.EVENT_BUS.register(this);
@@ -67,7 +73,9 @@ public class BBChat {
     @EventHandler
     public void relayInit(FMLServerStartingEvent event) {
         server = event.getServer();
+        serverThread = Thread.currentThread();
         try {
+            //noinspection unchecked
             relay = ChatRelay.create(
                     BBChatConfig.botToken,
                     BBChatConfig.guildId,
@@ -75,7 +83,7 @@ public class BBChat {
                     BBChatConfig.staffRoleId,
                     BBChatConfig.commandPrefix,
                     Arrays.stream(BBChatConfig.anyCommands).map(String::toString).collect(Collectors.toList()),
-                    (msg) -> server.getPlayerList().sendMessage(new TextComponentString(msg), false),
+                    msg -> ((List<EntityPlayerMP>) server.getConfigurationManager().playerEntityList).forEach(player -> player.addChatMessage(new ChatComponentText(msg))),
                     this::handleCommand
             );
         } catch (LoginException e) {
@@ -98,31 +106,31 @@ public class BBChat {
 
     @SubscribeEvent
     public void relayChat(ServerChatEvent event) {
-        String name = event.getPlayer().getName();
-        String text = event.getMessage();
+        String name = event.player.getDisplayName();
+        String text = event.message;
         relay.onChat(name, text);
     }
 
     @SubscribeEvent
     public void relayLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        String name = event.player.getName();
+        String name = event.player.getDisplayName();
         relay.onLogin(name);
     }
 
     @SubscribeEvent
     public void relayLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        String name = event.player.getName();
+        String name = event.player.getDisplayName();
         relay.onLogout(name);
     }
 
     @SubscribeEvent
-    public void relayAchievement(AdvancementEvent event) {
-        Advancement advancement = event.getAdvancement();
-        DisplayInfo displayInfo = advancement.getDisplay();
-        if (displayInfo == null) return;
-        String name = event.getEntityPlayer().getName();
-        String title = displayInfo.getTitle().getFormattedText();
-        String description = displayInfo.getDescription().getFormattedText();
+    public void relayAchievement(AchievementEvent event) {
+        Achievement achievement = event.achievement;
+        achievement.isAchievement();
+        if (!achievement.isAchievement()) return;
+        String name = event.entityPlayer.getDisplayName();
+        String title = achievement.func_150951_e().getFormattedText();
+        String description = achievement.getDescription();
         relay.onAchievement(name, title, description);
     }
 
@@ -131,14 +139,14 @@ public class BBChat {
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void relayDeath(LivingDeathEvent event) {
-        final EntityLivingBase living = event.getEntityLiving();
-        if (isRealPlayer(living) || (living.hasCustomName() && isRealPlayer(event.getSource().getTrueSource()))) {
-            final World world = living.getEntityWorld();
-            if (!world.getGameRules().getBoolean("showDeathMessages")) return;
-            String deathMessage = living.getCombatTracker().getDeathMessage().getFormattedText();
-            String target = living.getName();
-            Entity sourceEntity = event.getSource().getTrueSource();
-            String source = sourceEntity != null ? sourceEntity.getName() : null;
+        final EntityLivingBase living = event.entityLiving;
+        final World world = living.worldObj;
+        if (isRealPlayer(living) || (living instanceof EntityLiving && ((EntityLiving) living).hasCustomNameTag() && isRealPlayer(event.source.getEntity()))) {
+            if (!world.getGameRules().getGameRuleBooleanValue("showDeathMessages")) return;
+            String deathMessage = living.func_110142_aN().func_151521_b().getFormattedText();
+            String target = getName(living);
+            Entity sourceEntity = event.source.getSourceOfDamage();
+            String source = sourceEntity != null ? getName(sourceEntity) : null;
             relay.onDeath(deathMessage, target, source);
         }
     }
@@ -147,65 +155,82 @@ public class BBChat {
         if (!(entity instanceof EntityPlayerMP)) return false;
         EntityPlayerMP player = (EntityPlayerMP) entity;
         if (player instanceof FakePlayer) return false;
-        return player.connection != null;
+        return player.playerNetServerHandler != null;
+    }
+
+    public String getName(Entity entity) {
+        if (entity instanceof EntityPlayer) {
+            return ((EntityPlayer) entity).getDisplayName();
+        }
+        if (entity instanceof EntityLiving) {
+            EntityLiving living = (EntityLiving) entity;
+            if (living.hasCustomNameTag())
+                return living.getCustomNameTag();
+        }
+        return entity.getCommandSenderName();
     }
 
     private void handleCommand(boolean isStaff, String name, String displayName, String fullCommand, Consumer<String> response) {
         if (server == null) return;
         // Execute on the main server thread
-        if (!server.isCallingFromMinecraftThread()) {
-            server.callFromMainThread(Executors.callable(() -> handleCommand(isStaff, name, displayName, fullCommand, response)));
+        if (!isCallingFromMinecraftThread()) {
+            callFromMainThread(Executors.callable(() -> handleCommand(isStaff, name, displayName, fullCommand, response)));
             return;
         }
         // Create a command source with the correct level
         final int opLevel = isStaff ? server.getOpPermissionLevel() : 0;
         ICommandSender sender = new ICommandSender() {
             @Override
-            public String getName() {
+            public String getCommandSenderName() {
                 return name;
             }
 
             @Override
-            public ITextComponent getDisplayName() {
-                return new TextComponentString(displayName);
+            public IChatComponent func_145748_c_() {
+                return new ChatComponentText(displayName);
             }
 
             @Override
-            public void sendMessage(ITextComponent component) {
+            public void addChatMessage(IChatComponent component) {
                 response.accept(component.getFormattedText());
             }
 
             @Override
-            public boolean canUseCommand(int permLevel, String commandName) {
+            public boolean canCommandSenderUseCommand(int permLevel, String idk) {
                 return opLevel >= permLevel;
             }
 
             @Override
-            public BlockPos getPosition() {
-                return BlockPos.ORIGIN; // TODO: Make dynamic
-            }
-
-            @Override
-            public Vec3d getPositionVector() {
-                return Vec3d.ZERO; // TODO: Make dynamic
+            public ChunkCoordinates getPlayerCoordinates() {
+                return new ChunkCoordinates(0, 0, 0); // TODO: Make dynamic
             }
 
             @Override
             public World getEntityWorld() {
                 return server.getEntityWorld();
             }
-
-            @Override
-            public boolean sendCommandFeedback() {
-                return true;
-            }
-
-            @Nullable
-            @Override
-            public MinecraftServer getServer() {
-                return server;
-            }
         };
         server.getCommandManager().executeCommand(sender, fullCommand);
+    }
+
+    private void callFromMainThread(Callable<Object> callable) {
+        taskQueue.offer(callable);
+    }
+
+    private boolean isCallingFromMinecraftThread() {
+        return Thread.currentThread() == serverThread;
+    }
+
+    @SubscribeEvent
+    public void runTasks(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            while (!taskQueue.isEmpty()) {
+                try {
+                    taskQueue.poll().call();
+                } catch (Exception e) {
+                    LOGGER.error("Error while processing command / task", e);
+                }
+            }
+        }
     }
 }

@@ -32,7 +32,7 @@ processResources {
     inputs.property 'mod_version', project.mod_version
     inputs.property 'mc_version', project.mc_version
 
-    // replace stuff in mods.toml, nothing else
+    // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
 
