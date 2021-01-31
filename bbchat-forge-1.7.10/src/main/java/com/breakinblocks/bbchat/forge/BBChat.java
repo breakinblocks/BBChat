@@ -207,9 +207,11 @@ public class BBChat {
      */
     @SubscribeEvent
     public void relayAchievement(AchievementEvent event) {
-        boolean alreadyObtained = false;
         Achievement achievement = event.achievement;
-        if (!server.getConfigurationManager().func_152602_a(event.entityPlayer).hasAchievementUnlocked(achievement)) {
+        StatisticsFile statisticsFile = server.getConfigurationManager().func_152602_a(event.entityPlayer);
+        boolean hasRequirements = statisticsFile.canUnlockAchievement(achievement);
+        boolean alreadyObtained = statisticsFile.hasAchievementUnlocked(achievement);
+        if (hasRequirements && !alreadyObtained) {
             String name = event.entityPlayer.getDisplayName();
             String title = getFormattedText(achievement.func_150951_e());
             String description = getDescription(achievement);
