@@ -30,7 +30,9 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.breakinblocks.bbchat.common.TextUtils.Formatting.*;
+import static com.breakinblocks.bbchat.common.TextUtils.Formatting.BOLD;
+import static com.breakinblocks.bbchat.common.TextUtils.Formatting.ITALIC;
+import static com.breakinblocks.bbchat.common.TextUtils.Formatting.RESET;
 
 public class ChatRelay implements IRelay {
     private static final Logger LOGGER = LogManager.getLogger();
