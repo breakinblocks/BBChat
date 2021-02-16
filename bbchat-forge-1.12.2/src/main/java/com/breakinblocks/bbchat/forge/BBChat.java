@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 public class BBChat {
     public static final String MODID = "bbchat";
     private static final Logger LOGGER = LogManager.getLogger();
+    private static final String SHOW_DEATH_MESSAGES = "showDeathMessages";
     private IRelay relay = DummyRelay.INSTANCE;
     private MinecraftServer server = null;
 
@@ -134,7 +135,8 @@ public class BBChat {
         final EntityLivingBase living = event.getEntityLiving();
         if (isRealPlayer(living) || (living.hasCustomName() && isRealPlayer(event.getSource().getTrueSource()))) {
             final World world = living.getEntityWorld();
-            if (!world.getGameRules().getBoolean("showDeathMessages")) return;
+            if (world.getGameRules().hasRule(SHOW_DEATH_MESSAGES) && !world.getGameRules().getBoolean(SHOW_DEATH_MESSAGES))
+                return;
             String deathMessage = living.getCombatTracker().getDeathMessage().getFormattedText();
             String target = living.getName();
             Entity sourceEntity = event.getSource().getTrueSource();
