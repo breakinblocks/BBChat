@@ -1,6 +1,10 @@
+@file:Suppress("PropertyName")
+
+val mod_version: String by project
+
 allprojects {
-    group = 'com.breakinblocks.bbchat'
-    version = "${mod_version}"
+    group = "com.breakinblocks.bbchat"
+    version = mod_version
 }
 
 subprojects {
@@ -10,15 +14,18 @@ subprojects {
             mavenCentral()
         }
         dependencies {
-            classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
+            classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
         }
     }
 
-    apply plugin: 'java'
-    apply plugin: 'eclipse'
-    apply plugin: 'idea'
+    apply(plugin = "java")
+    apply(plugin = "eclipse")
+    apply(plugin = "idea")
 
-    sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+    configure<JavaPluginConvention> {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
 
     repositories {
         jcenter()

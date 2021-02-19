@@ -1,93 +1,149 @@
+@file:Suppress("PropertyName")
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import net.minecraftforge.gradle.delayed.DelayedFile
+import net.minecraftforge.gradle.delayed.DelayedString
+import net.minecraftforge.gradle.tasks.ProcessJarTask
+import net.minecraftforge.gradle.tasks.user.reobf.ArtifactSpec
+import net.minecraftforge.gradle.tasks.user.reobf.ReobfTask
+import net.minecraftforge.gradle.user.UserConstants
+import net.minecraftforge.gradle.user.UserExtension
+import net.minecraftforge.gradle.user.patch.ForgeUserPlugin
+
+val mod_version: String by project
+val mc_version: String by project
+val mc_version_range_supported: String by project
+val forge_version: String by project
+val forge_version_range_supported: String by project
+
 buildscript {
     repositories {
-        mavenCentral()
-        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = uri("https://files.minecraftforge.net/maven") }
     }
     dependencies {
-        classpath('com.anatawa12.forge:ForgeGradle:1.2-1.0.+') {
-            changing = true
-        }
+        classpath(group = "com.anatawa12.forge", name = "ForgeGradle", version = "1.2-1.0.4") { isChanging = true }
     }
 }
 
-apply plugin: 'forge'
-apply plugin: 'com.github.johnrengelman.shadow'
-def fg_plugin = plugins.findPlugin 'forge'
+apply(plugin = "forge")
+apply(plugin = "com.github.johnrengelman.shadow")
+val fg_plugin = plugins.getPlugin(ForgeUserPlugin::class.java)
 
-archivesBaseName = "bbchat-${mc_version}"
+base.archivesBaseName = "bbchat-${mc_version}"
 
-minecraft {
+configure<JavaPluginConvention> {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+configure<UserExtension> {
     version = "${mc_version}-${forge_version}-${mc_version}"
-    runDir = 'run'
+    runDir = "run"
 
-    replace 'version = ""', "version = \"${mod_version}\""
-    replace 'dependencies = ""', "dependencies = \"required-after:Forge@${forge_version_range_supported};\""
-    replace 'acceptedMinecraftVersions = ""', "acceptedMinecraftVersions = \"${mc_version_range_supported}\""
-    replaceIn "BBChat.java"
+    replace("version = \"\"", "version = \"${mod_version}\"")
+    replace("dependencies = \"\"", "dependencies = \"required-after:Forge@${forge_version_range_supported};\"")
+    replace("acceptedMinecraftVersions = \"\"", "acceptedMinecraftVersions = \"${mc_version_range_supported}\"")
+    replaceIn("BBChat.java")
 }
 
 dependencies {
-    compile project(path: ':bbchat-common', configuration: 'shadow')
+    implementation(project(path = ":bbchat-common", configuration = "shadow"))
 }
 
-processResources {
+tasks.named<ProcessResources>("processResources") {
     // this will ensure that this task is redone when the versions change.
-    inputs.property 'mod_version', project.mod_version
-    inputs.property 'mc_version', project.mc_version
+    inputs.property("mod_version", mod_version)
+    inputs.property("mc_version", mc_version)
 
     // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
+    from(sourceSets["main"].resources.srcDirs) {
+        include("mcmod.info")
 
         // replace mod_version and mc_version_range_supported and forge_version_major
-        expand 'mod_version': "${mod_version}",
-                'mc_version': "${mc_version}"
+        expand("mod_version" to "${mod_version}",
+                "mc_version" to "${mc_version}")
     }
 
     // copy everything else except the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+    from(sourceSets["main"].resources.srcDirs) {
+        exclude("mcmod.info")
     }
 }
 
-jar {
+tasks.named<Jar>("jar") {
     manifest {
-        attributes 'FMLAT': 'bbchat_at.cfg'
+        attributes("FMLAT" to "bbchat_at.cfg")
     }
 }
 
-shadowJar {
-    classifier = 'forge'
+val shadowJar = tasks.named<ShadowJar>("shadowJar") {
+    archiveClassifier.set("forge")
     dependencies {
-        include(project(':bbchat-common'))
+        include(project(":bbchat-common"))
     }
-    exclude 'dummyThing'
-    exclude '.cache'
-    exclude 'GradleStart*.class'
-    exclude 'net/minecraftforge/gradle/*'
+    exclude("dummyThing")
+    exclude(".cache")
+    exclude("GradleStart*.class")
+    exclude("net/minecraftforge/gradle/*")
 }
 
 // Source: https://github.com/Team-Fruit/BnnWidget/blob/32736398f19f7ae89874c47535f8816f02b6c2db/build.subprojects.gradle#L284-L305
 // License: MIT @ https://github.com/Team-Fruit/BnnWidget/blob/32736398f19f7ae89874c47535f8816f02b6c2db/LICENSE
-task reobfShadowJar(dependsOn: 'genSrgs', type: net.minecraftforge.gradle.tasks.user.reobf.ReobfTask) {
-    exceptorCfg = fg_plugin.delayedFile net.minecraftforge.gradle.user.UserConstants.EXC_SRG
-    srg = fg_plugin.delayedFile net.minecraftforge.gradle.user.UserConstants.REOBF_SRG
-    fieldCsv = fg_plugin.delayedFile net.minecraftforge.gradle.user.UserConstants.FIELD_CSV
-    fieldCsv = fg_plugin.delayedFile net.minecraftforge.gradle.user.UserConstants.METHOD_CSV
-    mcVersion = fg_plugin.delayedString '{MC_VERSION}'
-    mustRunAfter 'test'
-    mustRunAfter 'shadowJar'
-    reobf.dependsOn 'reobfShadowJar'
-    reobf(tasks.shadowJar) { arg ->
-        def javaConv = project.convention.plugins.get 'java'
-        arg.classpath = javaConv.getSourceSets().getByName('main').compileClasspath
+// Ported to Kotlin DSL by BlueAgent
+val reobfShadowJar = tasks.create("reobfShadowJar", net.minecraftforge.gradle.tasks.user.reobf.ReobfTask::class) {
+    dependsOn("genSrgs")
+    fun delayedString(path: String): DelayedString {
+        return DelayedString(project, path, fg_plugin)
     }
-    extraSrg = fg_plugin.extension.srgExtra
+
+    fun delayedFile(path: String): DelayedFile {
+        return DelayedFile(project, path, fg_plugin)
+    }
+    setExceptorCfg(delayedFile(UserConstants.EXC_SRG))
+    setSrg(delayedFile(UserConstants.REOBF_SRG))
+    setFieldCsv(delayedFile(UserConstants.FIELD_CSV))
+    setMethodCsv(delayedFile(UserConstants.METHOD_CSV))
+    setMcVersion(delayedString("{MC_VERSION}"))
+    mustRunAfter("test")
+    mustRunAfter("shadowJar")
+    val reobf = tasks.named<ReobfTask>("reobf") {
+        dependsOn("reobfShadowJar")
+    }
+    reobf(shadowJar.get(), object : Action<ArtifactSpec> {
+        override fun execute(artifactSpec: ArtifactSpec) {
+            val javaConv = project.convention.getPlugin(org.gradle.api.plugins.JavaPluginConvention::class.java)
+            artifactSpec.setClasspath(javaConv.getSourceSets().getByName("main").compileClasspath)
+        }
+    })
+    setExtraSrg(fg_plugin.extension.srgExtra)
+    fun delayedDirtyFile(name: String?, classifier: String?, ext: String?, usesMappings: Boolean): DelayedFile? {
+        return object : DelayedFile(project, "", fg_plugin) {
+            val DIRTY_DIR = "{BUILD_DIR}/dirtyArtifacts";
+            fun isNullOrEmpty(str: String?): Boolean {
+                return str == null || str.isEmpty()
+            }
+
+            fun hasApiVersion(): Boolean = true
+            override fun resolveDelayed(): File? {
+                val decompDeobf = project.tasks.getByName("deobfuscateJar") as ProcessJarTask
+                pattern = (if (decompDeobf.isClean) "{API_CACHE_DIR}/" + (if (usesMappings) UserConstants.MAPPING_APPENDAGE else "") else DIRTY_DIR) + "/"
+                pattern += if (!isNullOrEmpty(name)) name else "{API_NAME}"
+                pattern += "-" + if (hasApiVersion()) "{API_VERSION}" else "{MC_VERSION}"
+                if (!isNullOrEmpty(classifier)) pattern += "-$classifier"
+                if (!isNullOrEmpty(ext)) pattern += ".$ext"
+                return super.resolveDelayed()
+            }
+        }
+    }
     afterEvaluate {
-        if (fg_plugin.extension.decomp) {
-            deobfFile = tasks.deobfuscateJar.delayedOutput
-            recompFile = fg_plugin.delayedDirtyFile fg_plugin.srcDepName, null, 'jar'
+        if (fg_plugin.extension.isDecomp) {
+            setDeobfFile(tasks.named<ProcessJarTask>("deobfuscateJar").get().delayedOutput)
+            val srcDepName = fg_plugin.apiName + "Src"
+            setRecompFile(delayedDirtyFile(srcDepName, null, "jar", true))
         }
     }
 }
-reobf.dependsOn 'reobfShadowJar'
+
+tasks.named<ReobfTask>("reobf") {
+    dependsOn(reobfShadowJar)
+}
