@@ -11,19 +11,17 @@ val forge_version: String by project
 val forge_version_range_supported: String by project
 val mappings_version: String by project
 
-buildscript {
-    repositories {
-        maven { url = uri("https://files.minecraftforge.net/maven") }
-    }
-    dependencies {
-        classpath(group = "com.anatawa12.forge", name = "ForgeGradle", version = "2.3-1.0.2") { isChanging = true }
-    }
+plugins {
+    id("com.github.johnrengelman.shadow")
+    id("net.minecraftforge.gradle.forge")
 }
 
-apply(plugin = "net.minecraftforge.gradle.forge")
-apply(plugin = "com.github.johnrengelman.shadow")
-
 base.archivesBaseName = "bbchat-${mc_version}"
+
+configure<JavaPluginConvention> {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 configure<ForgeExtension> {
     version = "${mc_version}-${forge_version}"
@@ -50,8 +48,8 @@ tasks.named<ProcessResources>("processResources") {
         include("mcmod.info")
 
         // replace mod_version and mc_version_range_supported and forge_version_major
-        expand("mod_version" to "${mod_version}",
-                "mc_version" to "${mc_version}")
+        expand("mod_version" to mod_version,
+                "mc_version" to mc_version)
     }
 
     // copy everything else except the mcmod.info

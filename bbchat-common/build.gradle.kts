@@ -2,7 +2,10 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 val jda_version: String by project
 
-apply(plugin = "com.github.johnrengelman.shadow")
+plugins {
+    `java-library`
+    id("com.github.johnrengelman.shadow")
+}
 
 dependencies {
     implementation("org.jetbrains:annotations:16.0.2")

@@ -11,19 +11,17 @@ val forge_version: String by project
 val forge_version_range_supported: String by project
 val mappings_version: String by project
 
-buildscript {
-    repositories {
-        maven { url = uri("https://files.minecraftforge.net/maven") }
-    }
-    dependencies {
-        classpath(group = "net.minecraftforge.gradle", name = "ForgeGradle", version = "3.+") { isChanging = true }
-    }
+plugins {
+    id("com.github.johnrengelman.shadow")
+    id("net.minecraftforge.gradle")
 }
 
-apply(plugin = "net.minecraftforge.gradle")
-apply(plugin = "com.github.johnrengelman.shadow")
-
 base.archivesBaseName = "bbchat-${mc_version}"
+
+configure<JavaPluginConvention> {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 configure<UserDevExtension> {
     mappings("snapshot", mappings_version)

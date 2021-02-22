@@ -8,27 +8,31 @@ allprojects {
 }
 
 subprojects {
-    buildscript {
-        repositories {
-            jcenter()
-            mavenCentral()
-        }
-        dependencies {
-            classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
-        }
-    }
-
-    apply(plugin = "java")
-    apply(plugin = "eclipse")
-    apply(plugin = "idea")
-
-    configure<JavaPluginConvention> {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
     repositories {
-        jcenter()
-        mavenCentral()
+        // TODO: Update when JDA moves from JCenter
+        jcenter {
+            content {
+                includeGroup("net.dv8tion")
+            }
+        }
+        mavenCentral {
+            content {
+                includeGroup("com.fasterxml")
+                includeGroup("com.fasterxml.jackson")
+                includeGroup("com.fasterxml.jackson.core")
+                includeGroup("com.google.code.findbugs")
+                includeGroup("com.google.guava")
+                includeGroup("com.neovisionaries")
+                includeGroup("com.squareup.okhttp3")
+                includeGroup("com.squareup.okio")
+                includeGroup("net.sf.trove4j")
+                includeGroup("org.apache")
+                includeGroup("org.apache.commons")
+                includeGroup("org.apache.logging.log4j")
+                includeGroup("org.jetbrains")
+                includeGroup("org.slf4j")
+                includeGroup("org.sonatype.oss")
+            }
+        }
     }
 }

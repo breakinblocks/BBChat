@@ -16,17 +16,11 @@ val mc_version_range_supported: String by project
 val forge_version: String by project
 val forge_version_range_supported: String by project
 
-buildscript {
-    repositories {
-        maven { url = uri("https://files.minecraftforge.net/maven") }
-    }
-    dependencies {
-        classpath(group = "com.anatawa12.forge", name = "ForgeGradle", version = "1.2-1.0.4") { isChanging = true }
-    }
+plugins {
+    id("com.github.johnrengelman.shadow")
+    id("forge")
 }
 
-apply(plugin = "forge")
-apply(plugin = "com.github.johnrengelman.shadow")
 val fg_plugin = plugins.getPlugin(ForgeUserPlugin::class.java)
 
 base.archivesBaseName = "bbchat-${mc_version}"
@@ -60,8 +54,8 @@ tasks.named<ProcessResources>("processResources") {
         include("mcmod.info")
 
         // replace mod_version and mc_version_range_supported and forge_version_major
-        expand("mod_version" to "${mod_version}",
-                "mc_version" to "${mc_version}")
+        expand("mod_version" to mod_version,
+                "mc_version" to mc_version)
     }
 
     // copy everything else except the mcmod.info
@@ -90,7 +84,7 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
 // Source: https://github.com/Team-Fruit/BnnWidget/blob/32736398f19f7ae89874c47535f8816f02b6c2db/build.subprojects.gradle#L284-L305
 // License: MIT @ https://github.com/Team-Fruit/BnnWidget/blob/32736398f19f7ae89874c47535f8816f02b6c2db/LICENSE
 // Ported to Kotlin DSL by BlueAgent
-val reobfShadowJar = tasks.create("reobfShadowJar", net.minecraftforge.gradle.tasks.user.reobf.ReobfTask::class) {
+val reobfShadowJar = tasks.create("reobfShadowJar", ReobfTask::class) {
     dependsOn("genSrgs")
     fun delayedString(path: String): DelayedString {
         return DelayedString(project, path, fg_plugin)
@@ -111,7 +105,7 @@ val reobfShadowJar = tasks.create("reobfShadowJar", net.minecraftforge.gradle.ta
     }
     reobf(shadowJar.get(), object : Action<ArtifactSpec> {
         override fun execute(artifactSpec: ArtifactSpec) {
-            val javaConv = project.convention.getPlugin(org.gradle.api.plugins.JavaPluginConvention::class.java)
+            val javaConv = project.convention.getPlugin(JavaPluginConvention::class.java)
             artifactSpec.setClasspath(javaConv.getSourceSets().getByName("main").compileClasspath)
         }
     })
