@@ -38,6 +38,10 @@ configure<UserExtension> {
     runDir = "run"
 }
 
+dependencies {
+    implementation(project(path = ":bbchat-common", configuration = "shadow"))
+}
+
 // Use Blossom instead of FG source replacement
 tasks.filterIsInstance(SourceCopyTask::class.java).forEach { it.enabled = false }
 
@@ -48,25 +52,14 @@ configure<BlossomExtension> {
     replaceTokenIn("/BBChat.java")
 }
 
-dependencies {
-    implementation(project(path = ":bbchat-common", configuration = "shadow"))
-}
-
 tasks.named<ProcessResources>("processResources") {
-    // this will ensure that this task is redone when the versions change.
     inputs.property("mod_version", mod_version)
     inputs.property("mc_version", mc_version)
-
-    // replace stuff in mcmod.info, nothing else
     from(sourceSets["main"].resources.srcDirs) {
         include("mcmod.info")
-
-        // replace mod_version and mc_version_range_supported and forge_version_major
         expand("mod_version" to mod_version,
                 "mc_version" to mc_version)
     }
-
-    // copy everything else except the mcmod.info
     from(sourceSets["main"].resources.srcDirs) {
         exclude("mcmod.info")
     }
@@ -108,9 +101,6 @@ val reobfShadowJar = tasks.create("reobfShadowJar", ReobfTask::class) {
     setMcVersion(delayedString("{MC_VERSION}"))
     mustRunAfter("test")
     mustRunAfter("shadowJar")
-    val reobf = tasks.named<ReobfTask>("reobf") {
-        dependsOn("reobfShadowJar")
-    }
     reobf(shadowJar.get(), object : Action<ArtifactSpec> {
         override fun execute(artifactSpec: ArtifactSpec) {
             val javaConv = project.convention.getPlugin(JavaPluginConvention::class.java)

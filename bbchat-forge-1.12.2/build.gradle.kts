@@ -28,33 +28,21 @@ configure<JavaPluginConvention> {
 
 configure<UserDevExtension> {
     mappings(mappings_channel, mappings_version)
-
     runs {
         create("client") {
             workingDirectory(file("run"))
-
-            // Recommended logging data for a userdev environment
             property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
-
-            // Recommended logging level for the console
             property("forge.logging.console.level", "debug")
-
             mods {
                 create("bbchat") {
                     sources = listOf(sourceSets["main"])
                 }
             }
         }
-
         create("server") {
             workingDirectory(file("run"))
-
-            // Recommended logging data for a userdev environment
             property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
-
-            // Recommended logging level for the console
             property("forge.logging.console.level", "debug")
-
             mods {
                 create("bbchat") {
                     sources = listOf(sourceSets["main"])
@@ -62,6 +50,11 @@ configure<UserDevExtension> {
             }
         }
     }
+}
+
+dependencies {
+    add("minecraft", "net.minecraftforge:forge:${mc_version}-${forge_version}")
+    implementation(project(path = ":bbchat-common", configuration = "shadow"))
 }
 
 configure<BlossomExtension> {
@@ -71,26 +64,14 @@ configure<BlossomExtension> {
     replaceTokenIn("/BBChat.java")
 }
 
-dependencies {
-    add("minecraft", "net.minecraftforge:forge:${mc_version}-${forge_version}")
-    implementation(project(path = ":bbchat-common", configuration = "shadow"))
-}
-
 tasks.named<ProcessResources>("processResources") {
-    // this will ensure that this task is redone when the versions change.
     inputs.property("mod_version", mod_version)
     inputs.property("mc_version", mc_version)
-
-    // replace stuff in mcmod.info, nothing else
     from(sourceSets["main"].resources.srcDirs) {
         include("mcmod.info")
-
-        // replace mod_version and mc_version_range_supported and forge_version_major
         expand("mod_version" to mod_version,
                 "mc_version" to mc_version)
     }
-
-    // copy everything else except the mcmod.info
     from(sourceSets["main"].resources.srcDirs) {
         exclude("mcmod.info")
     }
