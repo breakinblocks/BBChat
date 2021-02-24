@@ -9,6 +9,7 @@ val mc_version: String by project
 val mc_version_range_supported: String by project
 val forge_version: String by project
 val forge_version_range_supported: String by project
+val mappings_channel: String by project
 val mappings_version: String by project
 
 plugins {
@@ -24,7 +25,7 @@ configure<JavaPluginConvention> {
 }
 
 configure<UserDevExtension> {
-    mappings("snapshot", mappings_version)
+    mappings(mappings_channel, mappings_version)
 
     runs {
         create("client") {

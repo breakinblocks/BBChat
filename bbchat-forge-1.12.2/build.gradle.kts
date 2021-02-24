@@ -1,19 +1,22 @@
 @file:Suppress("PropertyName")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.minecraftforge.gradle.user.IReobfuscator
-import net.minecraftforge.gradle.user.patcherUser.forge.ForgeExtension
+import net.kyori.blossom.BlossomExtension
+import net.minecraftforge.gradle.userdev.UserDevExtension
+import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 
 val mod_version: String by project
 val mc_version: String by project
 val mc_version_range_supported: String by project
 val forge_version: String by project
 val forge_version_range_supported: String by project
+val mappings_channel: String by project
 val mappings_version: String by project
 
 plugins {
     id("com.github.johnrengelman.shadow")
-    id("net.minecraftforge.gradle.forge")
+    id("net.kyori.blossom")
+    id("net.minecraftforge.gradle")
 }
 
 base.archivesBaseName = "bbchat-${mc_version}"
@@ -23,18 +26,53 @@ configure<JavaPluginConvention> {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-configure<ForgeExtension> {
-    version = "${mc_version}-${forge_version}"
-    runDir = "run"
-    mappings = "${mappings_version}"
+configure<UserDevExtension> {
+    mappings(mappings_channel, mappings_version)
 
-    replace("version = \"\"", "version = \"${mod_version}\"")
-    replace("dependencies = \"\"", "dependencies = \"required-after:forge@${forge_version_range_supported};\"")
-    replace("acceptedMinecraftVersions = \"\"", "acceptedMinecraftVersions = \"${mc_version_range_supported}\"")
-    replaceIn("BBChat.java")
+    runs {
+        create("client") {
+            workingDirectory(file("run"))
+
+            // Recommended logging data for a userdev environment
+            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
+
+            // Recommended logging level for the console
+            property("forge.logging.console.level", "debug")
+
+            mods {
+                create("bbchat") {
+                    sources = listOf(sourceSets["main"])
+                }
+            }
+        }
+
+        create("server") {
+            workingDirectory(file("run"))
+
+            // Recommended logging data for a userdev environment
+            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
+
+            // Recommended logging level for the console
+            property("forge.logging.console.level", "debug")
+
+            mods {
+                create("bbchat") {
+                    sources = listOf(sourceSets["main"])
+                }
+            }
+        }
+    }
+}
+
+configure<BlossomExtension> {
+    replaceToken("version = \"\"", "version = \"${mod_version}\"")
+    replaceToken("dependencies = \"\"", "dependencies = \"required-after:forge@${forge_version_range_supported};\"")
+    replaceToken("acceptedMinecraftVersions = \"\"", "acceptedMinecraftVersions = \"${mc_version_range_supported}\"")
+    replaceTokenIn("/BBChat.java")
 }
 
 dependencies {
+    add("minecraft", "net.minecraftforge:forge:${mc_version}-${forge_version}")
     implementation(project(path = ":bbchat-common", configuration = "shadow"))
 }
 
@@ -66,7 +104,7 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     exclude("dummyThing")
 }
 
-extensions.configure<NamedDomainObjectContainer<IReobfuscator>> {
+extensions.configure<NamedDomainObjectContainer<RenameJarInPlace>> {
     create("shadowJar")
 }
 

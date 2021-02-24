@@ -1,17 +1,17 @@
 pluginManagement {
     resolutionStrategy {
         eachPlugin {
-            when {
-                requested.id.toString() == "com.github.johnrengelman.shadow" -> {
+            when (requested.id.toString()) {
+                "com.github.johnrengelman.shadow" -> {
                     useModule("com.github.jengelman.gradle.plugins:shadow:5.2.0")
                 }
-                requested.id.toString() == "net.minecraftforge.gradle" -> {
+                "net.kyori.blossom" -> {
+                    useModule("net.kyori.blossom:net.kyori.blossom.gradle.plugin:1.1.0")
+                }
+                "net.minecraftforge.gradle" -> {
                     useModule("net.minecraftforge.gradle:ForgeGradle:3.0.190")
                 }
-                requested.id.toString() == "net.minecraftforge.gradle.forge" -> {
-                    useModule("com.anatawa12.forge:ForgeGradle:2.3-1.0.2")
-                }
-                requested.id.toString() == "forge" -> {
+                "forge" -> {
                     useModule("com.anatawa12.forge:ForgeGradle:1.2-1.0.4")
                 }
             }
@@ -33,6 +33,7 @@ pluginManagement {
         gradlePluginPortal {
             content {
                 includeGroup("com.github.jengelman.gradle.plugins")
+                includeGroup("net.kyori.blossom")
             }
         }
     }

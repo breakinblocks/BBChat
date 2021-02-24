@@ -1,9 +1,11 @@
 @file:Suppress("PropertyName")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import net.kyori.blossom.BlossomExtension
 import net.minecraftforge.gradle.delayed.DelayedFile
 import net.minecraftforge.gradle.delayed.DelayedString
 import net.minecraftforge.gradle.tasks.ProcessJarTask
+import net.minecraftforge.gradle.tasks.user.SourceCopyTask
 import net.minecraftforge.gradle.tasks.user.reobf.ArtifactSpec
 import net.minecraftforge.gradle.tasks.user.reobf.ReobfTask
 import net.minecraftforge.gradle.user.UserConstants
@@ -18,6 +20,7 @@ val forge_version_range_supported: String by project
 
 plugins {
     id("com.github.johnrengelman.shadow")
+    id("net.kyori.blossom")
     id("forge")
 }
 
@@ -33,11 +36,16 @@ configure<JavaPluginConvention> {
 configure<UserExtension> {
     version = "${mc_version}-${forge_version}-${mc_version}"
     runDir = "run"
+}
 
-    replace("version = \"\"", "version = \"${mod_version}\"")
-    replace("dependencies = \"\"", "dependencies = \"required-after:Forge@${forge_version_range_supported};\"")
-    replace("acceptedMinecraftVersions = \"\"", "acceptedMinecraftVersions = \"${mc_version_range_supported}\"")
-    replaceIn("BBChat.java")
+// Use Blossom instead of FG source replacement
+tasks.filterIsInstance(SourceCopyTask::class.java).forEach { it.enabled = false }
+
+configure<BlossomExtension> {
+    replaceToken("version = \"\"", "version = \"${mod_version}\"")
+    replaceToken("dependencies = \"\"", "dependencies = \"required-after:Forge@${forge_version_range_supported};\"")
+    replaceToken("acceptedMinecraftVersions = \"\"", "acceptedMinecraftVersions = \"${mc_version_range_supported}\"")
+    replaceTokenIn("/BBChat.java")
 }
 
 dependencies {
