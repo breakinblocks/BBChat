@@ -3,6 +3,7 @@ package com.breakinblocks.bbchat.forge;
 import com.breakinblocks.bbchat.common.ChatRelay;
 import com.breakinblocks.bbchat.common.DummyRelay;
 import com.breakinblocks.bbchat.common.IRelay;
+import com.breakinblocks.bbchat.common.PlayerCountInfo;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -91,6 +92,7 @@ public class BBChat {
                     BBChatConfig.commandPrefix,
                     Arrays.stream(BBChatConfig.anyCommands).map(String::toString).collect(Collectors.toList()),
                     msg -> server.getConfigurationManager().sendChatMsgImpl(new ChatComponentText(msg), false),
+                    () -> new PlayerCountInfo(server.getCurrentPlayerCount(), server.getMaxPlayers()),
                     this::handleCommand
             );
         } catch (LoginException e) {

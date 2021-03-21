@@ -3,6 +3,7 @@ package com.breakinblocks.bbchat.common;
 import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,6 +51,7 @@ public class ChatRelay implements IRelay {
     private final Set<String> anyCommands;
     private final ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
     private final Consumer<String> broadcastMessage;
+    private final Supplier<PlayerCountInfo> playerCount;
     private final CommandHandler commandHandler;
 
     private ChatRelay(
@@ -59,9 +62,10 @@ public class ChatRelay implements IRelay {
             String commandPrefix,
             Collection<String> anyCommands,
             Consumer<String> broadcastMessage,
+            Supplier<PlayerCountInfo> playerCount,
             CommandHandler commandHandler
     ) throws LoginException {
-        this.jda = JDABuilder
+        jda = JDABuilder
                 .create(botToken,
                         GatewayIntent.GUILD_MESSAGES
                 )
@@ -79,9 +83,10 @@ public class ChatRelay implements IRelay {
         this.guildId = guildId;
         this.channelId = channelId;
         this.staffRoleId = staffRoleId;
-        this.commandPrefixes = ImmutableSet.of(commandPrefix, "<@!" + this.jda.getSelfUser().getId() + "> ");
+        commandPrefixes = ImmutableSet.of(commandPrefix, "<@!" + jda.getSelfUser().getId() + "> ");
         this.anyCommands = ImmutableSet.copyOf(anyCommands);
         this.broadcastMessage = broadcastMessage;
+        this.playerCount = playerCount;
         this.commandHandler = commandHandler;
     }
 
@@ -93,12 +98,13 @@ public class ChatRelay implements IRelay {
             String commandPrefix,
             Collection<String> anyCommands,
             Consumer<String> broadcastMessage,
+            Supplier<PlayerCountInfo> playerCount,
             CommandHandler commandHandler
     ) throws LoginException {
         long guildIdL = parseULongOrZero(guildId, "guildId");
         long channelIdL = parseULongOrZero(channelId, "channelId");
         long staffRoleIdL = parseULongOrZero(staffRoleId, "staffRoleId");
-        return new ChatRelay(botToken, guildIdL, channelIdL, staffRoleIdL, commandPrefix, anyCommands, broadcastMessage, commandHandler);
+        return new ChatRelay(botToken, guildIdL, channelIdL, staffRoleIdL, commandPrefix, anyCommands, broadcastMessage, playerCount, commandHandler);
     }
 
     private static long parseULongOrZero(String input, String desc) {
@@ -136,7 +142,7 @@ public class ChatRelay implements IRelay {
         final boolean isStaff = member.getRoles().stream().anyMatch(role -> role.getIdLong() == staffRoleId);
         final String commandRoot = fullCommand.split(" ", 2)[0];
         // Check that it is a staff member or the command is allowed for anyone
-        if (isStaff || this.anyCommands.contains(commandRoot)) {
+        if (isStaff || anyCommands.contains(commandRoot)) {
             // Run command
             final String name = member.getUser().getAsTag() + " (" + member.getId() + ")";
             final String displayName = member.getEffectiveName();
@@ -175,6 +181,12 @@ public class ChatRelay implements IRelay {
         sendToDiscord(TextUtils.convertToDiscord(text));
     }
 
+    private void updatePlayerCount(boolean minusOne) {
+        PlayerCountInfo info = playerCount.get();
+        int current = info.getCurrent() + (minusOne ? -1 : 0);
+        jda.getPresence().setActivity(Activity.of(Activity.ActivityType.DEFAULT, "with " + current + "/" + info.getMax() + " players"));
+    }
+
     @SubscribeEvent
     public void sendQueueOnConnect(ReadyEvent event) {
         sendQueueToDiscord();
@@ -187,12 +199,13 @@ public class ChatRelay implements IRelay {
 
     @Override
     public void cleanup() {
-        this.jda.shutdown();
+        jda.shutdown();
     }
 
     @Override
     public void onStarted() {
         sendToDiscord("**Server Started**");
+        updatePlayerCount(false);
     }
 
     @Override
@@ -208,11 +221,13 @@ public class ChatRelay implements IRelay {
     @Override
     public void onLogin(String name) {
         convertAndSendToDiscord(String.format(FORMAT_LOGIN, name));
+        updatePlayerCount(false);
     }
 
     @Override
     public void onLogout(String name) {
         convertAndSendToDiscord(String.format(FORMAT_LOGOUT, name));
+        updatePlayerCount(true);
     }
 
     @Override

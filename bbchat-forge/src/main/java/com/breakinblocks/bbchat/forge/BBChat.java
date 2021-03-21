@@ -3,6 +3,7 @@ package com.breakinblocks.bbchat.forge;
 import com.breakinblocks.bbchat.common.ChatRelay;
 import com.breakinblocks.bbchat.common.DummyRelay;
 import com.breakinblocks.bbchat.common.IRelay;
+import com.breakinblocks.bbchat.common.PlayerCountInfo;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.command.CommandSource;
@@ -74,6 +75,7 @@ public class BBChat {
                     BBChatConfig.COMMON.commandPrefix.get(),
                     BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
                     (msg) -> server.getPlayerList().func_232641_a_(new StringTextComponent(msg), ChatType.CHAT, Util.DUMMY_UUID),
+                    () -> new PlayerCountInfo(server.getCurrentPlayerCount(), server.getMaxPlayers()),
                     this::handleCommand
             );
         } catch (LoginException e) {
