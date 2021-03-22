@@ -83,7 +83,11 @@ public class ChatRelay implements IRelay {
         this.guildId = guildId;
         this.channelId = channelId;
         this.staffRoleId = staffRoleId;
-        commandPrefixes = ImmutableSet.of(commandPrefix, "<@!" + jda.getSelfUser().getId() + "> ");
+        commandPrefixes = ImmutableSet.<String>builder()
+                .add(commandPrefix)
+                .add("<@!" + jda.getSelfUser().getId() + ">")
+                .add("<@" + jda.getSelfUser().getId() + ">")
+                .build();
         this.anyCommands = ImmutableSet.copyOf(anyCommands);
         this.broadcastMessage = broadcastMessage;
         this.playerCount = playerCount;
