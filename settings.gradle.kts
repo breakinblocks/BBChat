@@ -9,7 +9,7 @@ pluginManagement {
                     useModule("net.kyori.blossom:net.kyori.blossom.gradle.plugin:1.1.0")
                 }
                 "net.minecraftforge.gradle" -> {
-                    useModule("net.minecraftforge.gradle:ForgeGradle:4.1.3")
+                    useModule("net.minecraftforge.gradle:ForgeGradle:4.1.4")
                 }
                 "forge" -> {
                     useModule("com.anatawa12.forge:ForgeGradle:1.2-1.0.4")
