@@ -48,6 +48,7 @@ public class ChatRelay implements IRelay {
     private static final String FORMAT_LOGOUT = BOLD + "%s" + RESET + " left the server";
     private static final String FORMAT_ACHIEVEMENT = BOLD + "%s" + RESET + " got " + BOLD + "%s" + RESET + " " + ITALIC + "%s" + RESET;
     private static final Pattern REGEX_EMOTE = Pattern.compile(":([A-Za-z0-9_]{2,32}):");
+    private static final int MAX_DISCORD_MESSAGE_LENGTH = 2000;
     private static final int MAX_COMMAND_FILE_SIZE = 128 * 1024; // 128 KB should be plenty
     private final JDA jda;
     private final long guildId;
@@ -72,13 +73,14 @@ public class ChatRelay implements IRelay {
             CommandHandler commandHandler
     ) throws LoginException {
         jda = JDABuilder
-                .create(botToken,
-                        GatewayIntent.GUILD_MESSAGES
+                .create(
+                        botToken,
+                        GatewayIntent.GUILD_MESSAGES,
+                        GatewayIntent.GUILD_EMOJIS
                 )
                 .disableCache(
                         CacheFlag.ACTIVITY,
                         CacheFlag.VOICE_STATE,
-                        CacheFlag.EMOTE,
                         CacheFlag.CLIENT_STATUS,
                         CacheFlag.MEMBER_OVERRIDES
                 )
@@ -193,8 +195,9 @@ public class ChatRelay implements IRelay {
         TextChannel channel = jda.getTextChannelById(channelId);
         if (channel == null) return;
         for (CharSequence message = messageQueue.poll(); message != null; message = messageQueue.poll()) {
-            replaceEmotes(message);
-            channel.sendMessage(message).submit();
+            CharSequence replaced = replaceEmotes(message);
+            CharSequence truncated = replaced.subSequence(0, Math.min(MAX_DISCORD_MESSAGE_LENGTH, replaced.length()));
+            channel.sendMessage(truncated).submit();
         }
     }
 
