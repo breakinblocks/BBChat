@@ -71,11 +71,13 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("mod_version", mod_version)
     inputs.property("mc_version_range_supported", mc_version_range_supported)
     inputs.property("forge_version_range_supported", forge_version_range_supported)
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from(sourceSets["main"].resources.srcDirs) {
         include("META-INF/mods.toml")
-        expand("mod_version" to "${mod_version}",
-                "mc_version_range_supported" to "${mc_version_range_supported}",
-                "forge_version_range_supported" to "${forge_version_range_supported}"
+        expand(
+                "mod_version" to mod_version,
+                "mc_version_range_supported" to mc_version_range_supported,
+                "forge_version_range_supported" to forge_version_range_supported
         )
     }
     from(sourceSets["main"].resources.srcDirs) {

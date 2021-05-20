@@ -55,10 +55,13 @@ configure<BlossomExtension> {
 tasks.named<ProcessResources>("processResources") {
     inputs.property("mod_version", mod_version)
     inputs.property("mc_version", mc_version)
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from(sourceSets["main"].resources.srcDirs) {
         include("mcmod.info")
-        expand("mod_version" to mod_version,
-                "mc_version" to mc_version)
+        expand(
+                "mod_version" to mod_version,
+                "mc_version" to mc_version
+        )
     }
     from(sourceSets["main"].resources.srcDirs) {
         exclude("mcmod.info")
