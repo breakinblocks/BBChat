@@ -28,6 +28,8 @@ import java.io.InputStreamReader;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -41,7 +43,7 @@ import static com.breakinblocks.bbchat.common.TextUtils.Formatting.BOLD;
 import static com.breakinblocks.bbchat.common.TextUtils.Formatting.ITALIC;
 import static com.breakinblocks.bbchat.common.TextUtils.Formatting.RESET;
 
-public class ChatRelay implements IRelay {
+public final class ChatRelay implements IRelay {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String FORMAT_CHAT = BOLD + "[%s]" + RESET + " %s";
     private static final String FORMAT_LOGIN = BOLD + "%s" + RESET + " joined the server";
@@ -50,6 +52,7 @@ public class ChatRelay implements IRelay {
     private static final Pattern REGEX_EMOTE = Pattern.compile(":([A-Za-z0-9_]{2,32}):");
     private static final int MAX_DISCORD_MESSAGE_LENGTH = 2000;
     private static final int MAX_COMMAND_FILE_SIZE = 128 * 1024; // 128 KB should be plenty
+    private static final long LOGIN_ACHIEVEMENT_DELAY_MILLIS = 5 * 1000;
     private final JDA jda;
     private final long guildId;
     private final long channelId;
@@ -60,6 +63,7 @@ public class ChatRelay implements IRelay {
     private final Consumer<String> broadcastMessage;
     private final Supplier<PlayerCountInfo> playerCount;
     private final CommandHandler commandHandler;
+    private final Map<String, Long> lastLogin = new HashMap<>();
 
     private ChatRelay(
             String botToken,
@@ -260,6 +264,7 @@ public class ChatRelay implements IRelay {
 
     @Override
     public void onLogin(String name) {
+        lastLogin.put(name, System.currentTimeMillis());
         convertAndSendToDiscord(String.format(FORMAT_LOGIN, name));
         updatePlayerCount(false);
     }
@@ -272,6 +277,9 @@ public class ChatRelay implements IRelay {
 
     @Override
     public void onAchievement(String name, String title, String description) {
+        long now = System.currentTimeMillis();
+        if (now < lastLogin.getOrDefault(name, now) + LOGIN_ACHIEVEMENT_DELAY_MILLIS)
+            return;
         convertAndSendToDiscord(String.format(FORMAT_ACHIEVEMENT, name, title, description));
     }
 
