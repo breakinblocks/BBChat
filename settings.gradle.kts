@@ -9,9 +9,7 @@ pluginManagement {
                     useModule("net.kyori:blossom:1.2.0")
                 }
                 "net.minecraftforge.gradle" -> {
-                    // TODO: Change when FG5 actually works
-                    //useModule("net.minecraftforge.gradle:ForgeGradle:5.0.0")
-                    useModule("tk.sciwhiz12.gradle:ForgeGradle:4.1.9")
+                    useModule("net.minecraftforge.gradle:ForgeGradle:5.0.1")
                 }
                 "forge" -> {
                     useModule("com.anatawa12.forge:ForgeGradle:1.2-1.0.6")
@@ -27,13 +25,6 @@ pluginManagement {
                 includeGroup("net.minecraft")
                 includeGroup("net.minecraftforge")
                 includeGroup("net.minecraftforge.gradle")
-            }
-        }
-        maven {
-            name = "sciwhiz12"
-            url = uri("https://sciwhiz12.tk/maven")
-            content {
-                includeGroup("tk.sciwhiz12.gradle")
             }
         }
         gradlePluginPortal {
