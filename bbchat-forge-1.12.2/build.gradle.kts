@@ -71,8 +71,8 @@ tasks.named<ProcessResources>("processResources") {
     from(sourceSets["main"].resources.srcDirs) {
         include("mcmod.info")
         expand(
-                "mod_version" to mod_version,
-                "mc_version" to mc_version
+            "mod_version" to mod_version,
+            "mc_version" to mc_version
         )
     }
     from(sourceSets["main"].resources.srcDirs) {

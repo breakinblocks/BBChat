@@ -75,9 +75,9 @@ tasks.named<ProcessResources>("processResources") {
     from(sourceSets["main"].resources.srcDirs) {
         include("META-INF/mods.toml")
         expand(
-                "mod_version" to mod_version,
-                "mc_version_range_supported" to mc_version_range_supported,
-                "forge_version_range_supported" to forge_version_range_supported
+            "mod_version" to mod_version,
+            "mc_version_range_supported" to mc_version_range_supported,
+            "forge_version_range_supported" to forge_version_range_supported
         )
     }
     from(sourceSets["main"].resources.srcDirs) {
@@ -88,12 +88,12 @@ tasks.named<ProcessResources>("processResources") {
 tasks.named<Jar>("jar") {
     manifest {
         attributes(
-                "Specification-Title" to "BBChat",
-                "Specification-Vendor" to "Breakin' Blocks",
-                "Specification-Version" to "1",
-                "Implementation-Title" to project.name,
-                "Implementation-Version" to project.version,
-                "Implementation-Vendor" to "Breakin' Blocks"
+            "Specification-Title" to "BBChat",
+            "Specification-Vendor" to "Breakin' Blocks",
+            "Specification-Version" to "1",
+            "Implementation-Title" to project.name,
+            "Implementation-Version" to project.version,
+            "Implementation-Vendor" to "Breakin' Blocks"
         )
     }
 }

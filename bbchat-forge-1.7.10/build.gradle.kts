@@ -59,8 +59,8 @@ tasks.named<ProcessResources>("processResources") {
     from(sourceSets["main"].resources.srcDirs) {
         include("mcmod.info")
         expand(
-                "mod_version" to mod_version,
-                "mc_version" to mc_version
+            "mod_version" to mod_version,
+            "mc_version" to mc_version
         )
     }
     from(sourceSets["main"].resources.srcDirs) {
@@ -121,7 +121,8 @@ val reobfShadowJar = tasks.create("reobfShadowJar", ReobfTask::class) {
             fun hasApiVersion(): Boolean = true
             override fun resolveDelayed(): File? {
                 val decompDeobf = project.tasks.getByName("deobfuscateJar") as ProcessJarTask
-                pattern = (if (decompDeobf.isClean) "{API_CACHE_DIR}/" + (if (usesMappings) UserConstants.MAPPING_APPENDAGE else "") else DIRTY_DIR) + "/"
+                pattern =
+                    (if (decompDeobf.isClean) "{API_CACHE_DIR}/" + (if (usesMappings) UserConstants.MAPPING_APPENDAGE else "") else DIRTY_DIR) + "/"
                 pattern += if (!isNullOrEmpty(name)) name else "{API_NAME}"
                 pattern += "-" + if (hasApiVersion()) "{API_VERSION}" else "{MC_VERSION}"
                 if (!isNullOrEmpty(classifier)) pattern += "-$classifier"
