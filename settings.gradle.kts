@@ -9,10 +9,13 @@ pluginManagement {
                     useModule("net.kyori:blossom:1.2.0")
                 }
                 "net.minecraftforge.gradle" -> {
-                    useModule("net.minecraftforge.gradle:ForgeGradle:5.0.20")
+                    useModule("net.minecraftforge.gradle:ForgeGradle:5.1.20")
                 }
                 "forge" -> {
                     useModule("com.anatawa12.forge:ForgeGradle:1.2-1.0.6")
+                }
+                "org.parchmentmc.librarian.forgegradle" -> {
+                    useModule("org.parchmentmc.librarian.forgegradle:org.parchmentmc.librarian.forgegradle.gradle.plugin:1.1.2.3-dev-SNAPSHOT")
                 }
             }
         }
@@ -25,6 +28,14 @@ pluginManagement {
                 includeGroup("net.minecraft")
                 includeGroup("net.minecraftforge")
                 includeGroup("net.minecraftforge.gradle")
+            }
+        }
+        maven {
+            url = uri("https://maven.parchmentmc.org")
+            content {
+                includeGroup("org.parchmentmc")
+                includeGroup("org.parchmentmc.feather")
+                includeGroup("org.parchmentmc.librarian.forgegradle")
             }
         }
         gradlePluginPortal {

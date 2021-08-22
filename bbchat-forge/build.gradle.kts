@@ -15,11 +15,12 @@ val mappings_version: String by project
 plugins {
     id("com.github.johnrengelman.shadow")
     id("net.minecraftforge.gradle")
+    id("org.parchmentmc.librarian.forgegradle")
 }
 
-base.archivesBaseName = "bbchat-${mc_version}"
+base.archivesName.set("bbchat-${mc_version}")
 
-configure<JavaPluginConvention> {
+configure<JavaPluginExtension> {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
