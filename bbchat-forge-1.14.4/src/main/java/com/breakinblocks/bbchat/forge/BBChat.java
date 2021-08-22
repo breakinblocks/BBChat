@@ -72,8 +72,8 @@ public class BBChat {
                     BBChatConfig.COMMON.staffRoleId.get(),
                     BBChatConfig.COMMON.commandPrefix.get(),
                     BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
-                    (msg) -> server.getPlayerList().sendMessage(new StringTextComponent(msg), false),
-                    () -> new PlayerCountInfo(server.getCurrentPlayerCount(), server.getMaxPlayers()),
+                    (msg) -> server.getPlayerList().broadcastMessage(new StringTextComponent(msg), false),
+                    () -> new PlayerCountInfo(server.getPlayerCount(), server.getMaxPlayers()),
                     this::handleCommand
             );
         } catch (LoginException e) {
@@ -134,12 +134,12 @@ public class BBChat {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void relayDeath(LivingDeathEvent event) {
         final LivingEntity living = event.getEntityLiving();
-        if (isRealPlayer(living) || (living.hasCustomName() && isRealPlayer(event.getSource().getTrueSource()))) {
-            final World world = living.getEntityWorld();
-            if (!world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) return;
+        if (isRealPlayer(living) || (living.hasCustomName() && isRealPlayer(event.getSource().getEntity()))) {
+            final World world = living.getCommandSenderWorld();
+            if (!world.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) return;
             String deathMessage = living.getCombatTracker().getDeathMessage().getString();
             String target = living.getName().getString();
-            Entity sourceEntity = event.getSource().getTrueSource();
+            Entity sourceEntity = event.getSource().getEntity();
             String source = sourceEntity != null ? sourceEntity.getName().getString() : null;
             relay.onDeath(deathMessage, target, source);
         }
@@ -155,21 +155,21 @@ public class BBChat {
     private void handleCommand(boolean isStaff, String name, String displayName, String fullCommand, Consumer<String> response) {
         if (server == null) return;
         // Execute on the main server thread
-        if (!server.isOnExecutionThread()) {
+        if (!server.isSameThread()) {
             server.execute(() -> handleCommand(isStaff, name, displayName, fullCommand, response));
             return;
         }
         // Create a command source with the correct level
-        final int opLevel = isStaff ? server.getOpPermissionLevel() : 0;
-        ServerWorld serverWorld = server.getWorld(DimensionType.OVERWORLD);
+        final int opLevel = isStaff ? server.getOperatorUserPermissionLevel() : 0;
+        ServerWorld serverWorld = server.getLevel(DimensionType.OVERWORLD);
         CommandSource source = new CommandSource(
                 getConsumerSource(response),
-                new Vec3d(serverWorld.getSpawnPoint()), Vec2f.ZERO, serverWorld, // TODO: Make dynamic
+                new Vec3d(serverWorld.getSharedSpawnPos()), Vec2f.ZERO, serverWorld, // TODO: Make dynamic
                 opLevel,
                 name, new StringTextComponent(displayName),
                 this.server, null
         );
-        server.getCommandManager().handleCommand(source, fullCommand);
+        server.getCommands().performCommand(source, fullCommand);
     }
 
     @Nonnull
@@ -177,21 +177,21 @@ public class BBChat {
         return new ICommandSource() {
             @Override
             public void sendMessage(ITextComponent component) {
-                consumer.accept(component.getFormattedText());
+                consumer.accept(component.getColoredString());
             }
 
             @Override
-            public boolean shouldReceiveFeedback() {
+            public boolean acceptsSuccess() {
                 return true;
             }
 
             @Override
-            public boolean shouldReceiveErrors() {
+            public boolean acceptsFailure() {
                 return true;
             }
 
             @Override
-            public boolean allowLogging() {
+            public boolean shouldInformAdmins() {
                 return true;
             }
         };
