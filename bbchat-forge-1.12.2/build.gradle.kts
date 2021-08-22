@@ -19,9 +19,9 @@ plugins {
     id("net.minecraftforge.gradle")
 }
 
-base.archivesBaseName = "bbchat-${mc_version}"
+base.archivesName.set("bbchat-${mc_version}")
 
-configure<JavaPluginConvention> {
+configure<JavaPluginExtension> {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }

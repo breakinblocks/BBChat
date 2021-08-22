@@ -26,9 +26,9 @@ plugins {
 
 val fg_plugin = plugins.getPlugin(ForgeUserPlugin::class.java)
 
-base.archivesBaseName = "bbchat-${mc_version}"
+base.archivesName.set("bbchat-${mc_version}")
 
-configure<JavaPluginConvention> {
+configure<JavaPluginExtension> {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
@@ -104,16 +104,14 @@ val reobfShadowJar = tasks.create("reobfShadowJar", ReobfTask::class) {
     setMcVersion(delayedString("{MC_VERSION}"))
     mustRunAfter("test")
     mustRunAfter("shadowJar")
-    reobf(shadowJar.get(), object : Action<ArtifactSpec> {
-        override fun execute(artifactSpec: ArtifactSpec) {
-            val javaConv = project.convention.getPlugin(JavaPluginConvention::class.java)
-            artifactSpec.setClasspath(javaConv.getSourceSets().getByName("main").compileClasspath)
-        }
+    reobf(shadowJar.get(), closureOf<ArtifactSpec> {
+        val javaExt = project.extensions.getByType(JavaPluginExtension::class)
+        classpath = javaExt.sourceSets.getByName("main").compileClasspath
     })
-    setExtraSrg(fg_plugin.extension.srgExtra)
+    extraSrg = fg_plugin.extension.srgExtra
     fun delayedDirtyFile(name: String?, classifier: String?, ext: String?, usesMappings: Boolean): DelayedFile? {
         return object : DelayedFile(project, "", fg_plugin) {
-            val DIRTY_DIR = "{BUILD_DIR}/dirtyArtifacts";
+            val DIRTY_DIR = "{BUILD_DIR}/dirtyArtifacts"
             fun isNullOrEmpty(str: String?): Boolean {
                 return str == null || str.isEmpty()
             }

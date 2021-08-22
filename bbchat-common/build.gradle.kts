@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 val jda_version: String by project
@@ -42,7 +44,7 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
         include(dependency("org.slf4j:slf4j-api"))
     }
 
-    val relocatePackage = { p: String -> relocate(p, "com.breakinblocks.bbchat.shadow." + p) }
+    val relocatePackage = { p: String -> relocate(p, "com.breakinblocks.bbchat.shadow.$p") }
 
     // net.dv8tion:JDA
     relocatePackage("net.dv8tion")
