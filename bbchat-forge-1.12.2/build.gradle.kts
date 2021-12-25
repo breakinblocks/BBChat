@@ -14,6 +14,7 @@ val mappings_channel: String by project
 val mappings_version: String by project
 
 plugins {
+    id("com.github.ben-manes.versions")
     id("com.github.johnrengelman.shadow")
     id("net.kyori.blossom")
     id("net.minecraftforge.gradle")

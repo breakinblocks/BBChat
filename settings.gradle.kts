@@ -2,6 +2,9 @@ pluginManagement {
     resolutionStrategy {
         eachPlugin {
             when (requested.id.toString()) {
+                "com.github.ben-manes.versions" -> {
+                    useModule("com.github.ben-manes:gradle-versions-plugin:0.39.0")
+                }
                 "com.github.johnrengelman.shadow" -> {
                     useModule("gradle.plugin.com.github.johnrengelman:shadow:7.1.1")
                 }
@@ -41,6 +44,7 @@ pluginManagement {
         gradlePluginPortal {
             // Gradle plugin portal includes jcenter, migrate away from this if possible
             content {
+                includeGroup("com.github.ben-manes")
                 includeGroup("com.gradle.publish")
                 includeGroup("gradle.plugin.com.github.johnrengelman")
                 includeGroup("net.kyori")

@@ -19,6 +19,7 @@ val forge_version: String by project
 val forge_version_range_supported: String by project
 
 plugins {
+    id("com.github.ben-manes.versions")
     id("com.github.johnrengelman.shadow")
     id("net.kyori.blossom")
     id("forge")

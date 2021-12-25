@@ -6,6 +6,7 @@ val jda_version: String by project
 
 plugins {
     `java-library`
+    id("com.github.ben-manes.versions")
     id("com.github.johnrengelman.shadow")
 }
 
