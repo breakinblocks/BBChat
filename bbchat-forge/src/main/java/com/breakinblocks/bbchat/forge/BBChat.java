@@ -4,24 +4,24 @@ import com.breakinblocks.bbchat.common.ChatRelay;
 import com.breakinblocks.bbchat.common.DummyRelay;
 import com.breakinblocks.bbchat.common.IRelay;
 import com.breakinblocks.bbchat.common.PlayerCountInfo;
+import net.minecraft.Util;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.ICommandSource;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ChatType;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.ServerChatEvent;
@@ -30,15 +30,14 @@ import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
-import net.minecraftforge.fml.network.FMLNetworkConstants;
-import org.apache.commons.lang3.tuple.Pair;
+import net.minecraftforge.fmllegacy.network.FMLNetworkConstants;
+import net.minecraftforge.fmlserverevents.FMLServerStartedEvent;
+import net.minecraftforge.fmlserverevents.FMLServerStartingEvent;
+import net.minecraftforge.fmlserverevents.FMLServerStoppedEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,7 +58,7 @@ public class BBChat {
     public BBChat() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BBChatConfig.commonSpec);
         // Ignore this mod being installed on either side
-        ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -74,7 +73,7 @@ public class BBChat {
                     BBChatConfig.COMMON.staffRoleId.get(),
                     BBChatConfig.COMMON.commandPrefix.get(),
                     BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
-                    (msg) -> server.getPlayerList().broadcastMessage(new StringTextComponent(msg), ChatType.CHAT, Util.NIL_UUID),
+                    (msg) -> server.getPlayerList().broadcastMessage(new TextComponent(msg), ChatType.CHAT, Util.NIL_UUID),
                     () -> new PlayerCountInfo(server.getPlayerCount(), server.getMaxPlayers()),
                     this::handleCommand
             );
@@ -131,13 +130,13 @@ public class BBChat {
     }
 
     /**
-     * @see ServerPlayerEntity#die(DamageSource)
+     * @see ServerPlayer#die(DamageSource)
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void relayDeath(LivingDeathEvent event) {
         final LivingEntity living = event.getEntityLiving();
         if (isRealPlayer(living) || (living.hasCustomName() && isRealPlayer(event.getSource().getEntity()))) {
-            final World world = living.getCommandSenderWorld();
+            final Level world = living.getCommandSenderWorld();
             if (!world.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) return;
             String deathMessage = living.getCombatTracker().getDeathMessage().getString();
             String target = living.getName().getString();
@@ -148,8 +147,8 @@ public class BBChat {
     }
 
     public boolean isRealPlayer(@Nullable Entity entity) {
-        if (!(entity instanceof ServerPlayerEntity)) return false;
-        ServerPlayerEntity player = (ServerPlayerEntity) entity;
+        if (!(entity instanceof ServerPlayer)) return false;
+        ServerPlayer player = (ServerPlayer) entity;
         if (player instanceof FakePlayer) return false;
         return player.connection != null;
     }
@@ -163,22 +162,22 @@ public class BBChat {
         }
         // Create a command source with the correct level
         final int opLevel = isStaff ? server.getOperatorUserPermissionLevel() : 0;
-        ServerWorld serverWorld = server.overworld();
-        CommandSource source = new CommandSource(
+        ServerLevel serverWorld = server.overworld();
+        CommandSourceStack source = new CommandSourceStack(
                 getConsumerSource(response),
-                Vector3d.atLowerCornerOf(serverWorld.getSharedSpawnPos()), Vector2f.ZERO, serverWorld, // TODO: Make dynamic
+                Vec3.atLowerCornerOf(serverWorld.getSharedSpawnPos()), Vec2.ZERO, serverWorld, // TODO: Make dynamic
                 opLevel,
-                name, new StringTextComponent(displayName),
+                name, new TextComponent(displayName),
                 this.server, null
         );
         server.getCommands().performCommand(source, fullCommand);
     }
 
     @Nonnull
-    private ICommandSource getConsumerSource(Consumer<String> consumer) {
-        return new ICommandSource() {
+    private CommandSource getConsumerSource(Consumer<String> consumer) {
+        return new CommandSource() {
             @Override
-            public void sendMessage(ITextComponent component, UUID senderUUID) {
+            public void sendMessage(Component component, UUID senderUUID) {
                 consumer.accept(component.getString());
             }
 

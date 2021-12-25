@@ -21,7 +21,7 @@ plugins {
 
 base.archivesName.set("bbchat-${mc_version}")
 
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(16))
 
 configure<UserDevExtension> {
     mappings(mappings_channel, mappings_version)
