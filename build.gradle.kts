@@ -9,8 +9,8 @@ allprojects {
 
 subprojects {
     repositories {
-        // TODO: Update when JDA moves from JCenter
-        jcenter {
+        maven {
+            url = uri("https://m2.dv8tion.net/releases")
             content {
                 includeGroup("net.dv8tion")
             }
@@ -28,6 +28,7 @@ subprojects {
                 includeGroup("net.sf.trove4j")
                 includeGroup("org.apache")
                 includeGroup("org.apache.commons")
+                includeGroup("org.apache.logging")
                 includeGroup("org.apache.logging.log4j")
                 includeGroup("org.jetbrains")
                 includeGroup("org.slf4j")

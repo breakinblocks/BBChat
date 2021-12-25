@@ -10,11 +10,11 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jetbrains:annotations:16.0.2")
+    implementation("org.jetbrains:annotations:23.0.0")
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation("com.google.guava:guava:21.0")
-    implementation("org.apache.logging.log4j:log4j-api:2.11.2")
-    implementation("org.apache.logging.log4j:log4j-core:2.11.2")
+    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
+    implementation("org.apache.logging.log4j:log4j-core:2.17.0")
 
     implementation("net.dv8tion:JDA:${jda_version}") {
         exclude(module = "opus-java")

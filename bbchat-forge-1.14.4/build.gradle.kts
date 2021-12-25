@@ -19,10 +19,7 @@ plugins {
 
 base.archivesName.set("bbchat-${mc_version}")
 
-configure<JavaPluginExtension> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
 
 configure<UserDevExtension> {
     mappings(mappings_channel, mappings_version)
