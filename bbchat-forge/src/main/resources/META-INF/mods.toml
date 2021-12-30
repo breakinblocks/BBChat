@@ -1,0 +1,27 @@
+modLoader = "javafml"
+loaderVersion = "${forge_version_range_supported}"
+license = "MIT"
+issueTrackerURL = "https://github.com/breakinblocks/BBChat/issues"
+
+[[mods]]
+modId = "bbchat"
+version = "${mod_version}"
+displayName = "BBChat"
+displayURL = "https://github.com/breakinblocks/BBChat"
+credits = "https://github.com/breakinblocks/BBChat/graphs/contributors"
+authors = "BBChat contributors"
+description = "Chat relay for Minecraft and Discord"
+
+[[dependencies.bbchat]]
+modId = "forge"
+mandatory = true
+versionRange = "${forge_version_range_supported}"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.bbchat]]
+modId = "minecraft"
+mandatory = true
+versionRange = "${mc_version_range_supported}"
+ordering = "AFTER"
+side = "BOTH"
