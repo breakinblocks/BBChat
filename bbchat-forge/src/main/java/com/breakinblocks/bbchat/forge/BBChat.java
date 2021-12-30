@@ -28,16 +28,16 @@ import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fmllegacy.network.FMLNetworkConstants;
-import net.minecraftforge.fmlserverevents.FMLServerStartedEvent;
-import net.minecraftforge.fmlserverevents.FMLServerStartingEvent;
-import net.minecraftforge.fmlserverevents.FMLServerStoppedEvent;
+import net.minecraftforge.network.NetworkConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,12 +58,12 @@ public class BBChat {
     public BBChat() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BBChatConfig.commonSpec);
         // Ignore this mod being installed on either side
-        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
         MinecraftForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent
-    public void relayInit(FMLServerStartingEvent event) {
+    public void relayInit(ServerStartingEvent event) {
         server = event.getServer();
         try {
             relay = ChatRelay.create(
@@ -83,19 +83,19 @@ public class BBChat {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void relayCleanup(FMLServerStoppedEvent event) {
+    public void relayCleanup(ServerStoppedEvent event) {
         relay.cleanup();
         relay = DummyRelay.INSTANCE;
         server = null;
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void relayServerStarted(FMLServerStartedEvent event) {
+    public void relayServerStarted(ServerStartedEvent event) {
         relay.onStarted();
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void relayServerStopped(FMLServerStoppedEvent event) {
+    public void relayServerStopped(ServerStoppedEvent event) {
         relay.onStopped();
     }
 
