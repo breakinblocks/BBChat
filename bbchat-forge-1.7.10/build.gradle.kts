@@ -29,9 +29,13 @@ val fg_plugin = plugins.getPlugin(ForgeUserPlugin::class.java)
 
 base.archivesName.set("bbchat-${mc_version}")
 
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+
+// Workaround for the source and target compatibility being set by something...
+@Suppress("NULL_FOR_NONNULL_TYPE")
 configure<JavaPluginExtension> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = null
+    targetCompatibility = null
 }
 
 configure<UserExtension> {
