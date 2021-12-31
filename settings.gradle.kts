@@ -3,16 +3,16 @@ pluginManagement {
         eachPlugin {
             when (requested.id.toString()) {
                 "com.github.ben-manes.versions" -> {
-                    useModule("com.github.ben-manes:gradle-versions-plugin:0.39.0")
+                    useModule("com.github.ben-manes:gradle-versions-plugin:0.40.0")
                 }
                 "com.github.johnrengelman.shadow" -> {
-                    useModule("gradle.plugin.com.github.johnrengelman:shadow:7.1.1")
+                    useModule("gradle.plugin.com.github.johnrengelman:shadow:7.1.2")
                 }
                 "net.kyori.blossom" -> {
-                    useModule("net.kyori:blossom:1.2.0")
+                    useModule("net.kyori:blossom:1.3.0")
                 }
                 "net.minecraftforge.gradle" -> {
-                    useModule("net.minecraftforge.gradle:ForgeGradle:5.1.26")
+                    useModule("net.minecraftforge.gradle:ForgeGradle:5.1.27")
                 }
                 "forge" -> {
                     useModule("com.anatawa12.forge:ForgeGradle:1.2-1.0.7")
