@@ -82,11 +82,8 @@ public final class ChatRelay implements IRelay {
                         GatewayIntent.GUILD_MESSAGES,
                         GatewayIntent.GUILD_EMOJIS
                 )
-                .disableCache(
-                        CacheFlag.ACTIVITY,
-                        CacheFlag.VOICE_STATE,
-                        CacheFlag.CLIENT_STATUS,
-                        CacheFlag.MEMBER_OVERRIDES
+                .enableCache(
+                        CacheFlag.EMOTE
                 )
                 .setMemberCachePolicy(MemberCachePolicy.NONE)
                 .setEventManager(new AnnotatedEventManager())
@@ -116,11 +113,47 @@ public final class ChatRelay implements IRelay {
             Consumer<String> broadcastMessage,
             Supplier<PlayerCountInfo> playerCount,
             CommandHandler commandHandler
-    ) throws LoginException {
+    ) {
         long guildIdL = parseULongOrZero(guildId, "guildId");
         long channelIdL = parseULongOrZero(channelId, "channelId");
         long staffRoleIdL = parseULongOrZero(staffRoleId, "staffRoleId");
-        return new ChatRelay(botToken, guildIdL, channelIdL, staffRoleIdL, commandPrefix, anyCommands, broadcastMessage, playerCount, commandHandler);
+        ProxyRelay proxyRelay = new ProxyRelay();
+        Thread createThread = new Thread(() -> {
+            try {
+                int retries = 0;
+                long delay = 5;
+                // Cap out retry delay at 1 hour.
+                long maxDelay = 60 * 60;
+                while (true) {
+                    try {
+                        LOGGER.info("Logging in to Discord...");
+                        ChatRelay chatRelay = new ChatRelay(botToken, guildIdL, channelIdL, staffRoleIdL, commandPrefix, anyCommands, broadcastMessage, playerCount, commandHandler);
+                        if (proxyRelay.isServerRunning())
+                            chatRelay.onStarted();
+                        proxyRelay.setRelay(chatRelay);
+                        break;
+                    } catch (RuntimeException | LoginException e) {
+                        LOGGER.warn("Failed to connect to Discord.", e);
+                    }
+                    LOGGER.info("Retrying in " + delay + "s");
+                    Thread.sleep(delay * 1000L);
+                    delay = Math.min(delay * 2, maxDelay);
+                }
+                LOGGER.info("Connected to Discord!");
+            } catch (InterruptedException ex) {
+                LOGGER.warn("Interrupted before connecting to Discord.", ex);
+            }
+        });
+        createThread.setName("BBChat Relay Creation Thread");
+        createThread.setDaemon(true);
+
+        if (!botToken.isEmpty()) {
+            createThread.start();
+        } else {
+            LOGGER.warn("Bot Token is empty.");
+        }
+
+        return proxyRelay;
     }
 
     private static long parseULongOrZero(String input, String desc) {
