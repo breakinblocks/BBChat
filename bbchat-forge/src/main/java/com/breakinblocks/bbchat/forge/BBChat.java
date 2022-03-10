@@ -28,8 +28,8 @@ import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -63,7 +63,7 @@ public class BBChat {
     }
 
     @SubscribeEvent
-    public void relayInit(ServerStartingEvent event) {
+    public void relayInit(ServerAboutToStartEvent event) {
         server = event.getServer();
         try {
             relay = ChatRelay.create(

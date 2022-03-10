@@ -33,8 +33,8 @@ import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
 import net.minecraftforge.fml.network.FMLNetworkConstants;
 import org.apache.commons.lang3.tuple.Pair;
@@ -62,7 +62,7 @@ public class BBChat {
     }
 
     @SubscribeEvent
-    public void relayInit(FMLServerStartingEvent event) {
+    public void relayInit(FMLServerAboutToStartEvent event) {
         server = event.getServer();
         try {
             relay = ChatRelay.create(
