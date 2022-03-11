@@ -65,21 +65,17 @@ public class BBChat {
     @SubscribeEvent
     public void relayInit(ServerAboutToStartEvent event) {
         server = event.getServer();
-        try {
-            relay = ChatRelay.create(
-                    BBChatConfig.COMMON.botToken.get(),
-                    BBChatConfig.COMMON.guildId.get(),
-                    BBChatConfig.COMMON.channelId.get(),
-                    BBChatConfig.COMMON.staffRoleId.get(),
-                    BBChatConfig.COMMON.commandPrefix.get(),
-                    BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
-                    (msg) -> server.getPlayerList().broadcastMessage(new TextComponent(msg), ChatType.CHAT, Util.NIL_UUID),
-                    () -> new PlayerCountInfo(server.getPlayerCount(), server.getMaxPlayers()),
-                    this::handleCommand
-            );
-        } catch (LoginException e) {
-            LOGGER.warn("Failed to login ;-;. Check your bot token.", e);
-        }
+        relay = ChatRelay.create(
+                BBChatConfig.COMMON.botToken.get(),
+                BBChatConfig.COMMON.guildId.get(),
+                BBChatConfig.COMMON.channelId.get(),
+                BBChatConfig.COMMON.staffRoleId.get(),
+                BBChatConfig.COMMON.commandPrefix.get(),
+                BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
+                (msg) -> server.getPlayerList().broadcastMessage(new TextComponent(msg), ChatType.CHAT, Util.NIL_UUID),
+                () -> new PlayerCountInfo(server.getPlayerCount(), server.getMaxPlayers()),
+                this::handleCommand
+        );
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

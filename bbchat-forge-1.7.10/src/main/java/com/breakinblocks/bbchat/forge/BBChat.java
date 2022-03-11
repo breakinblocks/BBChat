@@ -42,7 +42,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import javax.security.auth.login.LoginException;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
 import java.util.LinkedList;
@@ -83,21 +82,17 @@ public class BBChat {
     public void relayInit(FMLServerAboutToStartEvent event) {
         server = event.getServer();
         serverThread = Thread.currentThread();
-        try {
-            relay = ChatRelay.create(
-                    BBChatConfig.botToken,
-                    BBChatConfig.guildId,
-                    BBChatConfig.channelId,
-                    BBChatConfig.staffRoleId,
-                    BBChatConfig.commandPrefix,
-                    Arrays.stream(BBChatConfig.anyCommands).map(String::toString).collect(Collectors.toList()),
-                    msg -> server.getConfigurationManager().sendChatMsgImpl(new ChatComponentText(msg), false),
-                    () -> new PlayerCountInfo(server.getCurrentPlayerCount(), server.getMaxPlayers()),
-                    this::handleCommand
-            );
-        } catch (LoginException e) {
-            LOGGER.warn("Failed to login ;-;. Check your bot token.", e);
-        }
+        relay = ChatRelay.create(
+                BBChatConfig.botToken,
+                BBChatConfig.guildId,
+                BBChatConfig.channelId,
+                BBChatConfig.staffRoleId,
+                BBChatConfig.commandPrefix,
+                Arrays.stream(BBChatConfig.anyCommands).map(String::toString).collect(Collectors.toList()),
+                msg -> server.getConfigurationManager().sendChatMsgImpl(new ChatComponentText(msg), false),
+                () -> new PlayerCountInfo(server.getCurrentPlayerCount(), server.getMaxPlayers()),
+                this::handleCommand
+        );
     }
 
     @EventHandler
