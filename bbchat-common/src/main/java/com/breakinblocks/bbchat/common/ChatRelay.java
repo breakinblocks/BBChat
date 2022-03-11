@@ -82,6 +82,14 @@ public final class ChatRelay implements IRelay {
                         GatewayIntent.GUILD_MESSAGES,
                         GatewayIntent.GUILD_EMOJIS
                 )
+                .disableCache(
+                        CacheFlag.ACTIVITY,
+                        CacheFlag.VOICE_STATE,
+                        CacheFlag.CLIENT_STATUS,
+                        CacheFlag.MEMBER_OVERRIDES,
+                        CacheFlag.ROLE_TAGS,
+                        CacheFlag.ONLINE_STATUS
+                )
                 .enableCache(
                         CacheFlag.EMOTE
                 )
