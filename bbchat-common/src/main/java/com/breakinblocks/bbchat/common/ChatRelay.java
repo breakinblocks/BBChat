@@ -132,7 +132,7 @@ public final class ChatRelay implements IRelay {
                             chatRelay.onStarted();
                         proxyRelay.setRelay(chatRelay);
                         break;
-                    } catch (RuntimeException | LoginException e) {
+                    } catch (RuntimeException e) {
                         LOGGER.warn("Failed to connect to Discord.", e);
                     }
                     LOGGER.info("Retrying in " + delay + "s");
@@ -140,18 +140,15 @@ public final class ChatRelay implements IRelay {
                     delay = Math.min(delay * 2, maxDelay);
                 }
                 LOGGER.info("Connected to Discord!");
-            } catch (InterruptedException ex) {
-                LOGGER.warn("Interrupted before connecting to Discord.", ex);
+            } catch (InterruptedException e) {
+                LOGGER.warn("Interrupted before connecting to Discord.", e);
+            } catch (LoginException e) {
+                LOGGER.warn("Failed to login ;-;. Check your bot token.", e);
             }
         });
         createThread.setName("BBChat Relay Creation Thread");
         createThread.setDaemon(true);
-
-        if (!botToken.isEmpty()) {
-            createThread.start();
-        } else {
-            LOGGER.warn("Bot Token is empty.");
-        }
+        createThread.start();
 
         return proxyRelay;
     }
