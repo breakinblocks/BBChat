@@ -43,7 +43,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.security.auth.login.LoginException;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
