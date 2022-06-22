@@ -6,6 +6,7 @@ issueTrackerURL = "https://github.com/breakinblocks/BBChat/issues"
 [[mods]]
 modId = "bbchat"
 version = "${mod_version}"
+displayTest = "NONE"
 displayName = "BBChat"
 displayURL = "https://github.com/breakinblocks/BBChat"
 credits = "https://github.com/breakinblocks/BBChat/graphs/contributors"

@@ -4,14 +4,12 @@ import com.breakinblocks.bbchat.common.ChatRelay;
 import com.breakinblocks.bbchat.common.DummyRelay;
 import com.breakinblocks.bbchat.common.IRelay;
 import com.breakinblocks.bbchat.common.PlayerCountInfo;
-import net.minecraft.Util;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -43,8 +41,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.security.auth.login.LoginException;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -72,7 +68,7 @@ public class BBChat {
                 BBChatConfig.COMMON.staffRoleId.get(),
                 BBChatConfig.COMMON.commandPrefix.get(),
                 BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
-                (msg) -> server.getPlayerList().broadcastMessage(new TextComponent(msg), ChatType.CHAT, Util.NIL_UUID),
+                (msg) -> server.getPlayerList().broadcastSystemMessage(Component.literal(msg), ChatType.CHAT),
                 () -> new PlayerCountInfo(server.getPlayerCount(), server.getMaxPlayers()),
                 this::handleCommand
         );
@@ -163,7 +159,7 @@ public class BBChat {
                 getConsumerSource(response),
                 Vec3.atLowerCornerOf(serverWorld.getSharedSpawnPos()), Vec2.ZERO, serverWorld, // TODO: Make dynamic
                 opLevel,
-                name, new TextComponent(displayName),
+                name, Component.literal(displayName),
                 this.server, null
         );
         server.getCommands().performCommand(source, fullCommand);
@@ -173,7 +169,7 @@ public class BBChat {
     private CommandSource getConsumerSource(Consumer<String> consumer) {
         return new CommandSource() {
             @Override
-            public void sendMessage(Component component, UUID senderUUID) {
+            public void sendSystemMessage(Component component) {
                 consumer.accept(component.getString());
             }
 
