@@ -12,7 +12,7 @@ pluginManagement {
                     useModule("net.kyori:blossom:1.3.0")
                 }
                 "net.minecraftforge.gradle" -> {
-                    useModule("net.minecraftforge.gradle:ForgeGradle:5.1.37")
+                    useModule("net.minecraftforge.gradle:ForgeGradle:5.1.48")
                 }
                 "forge" -> {
                     useModule("com.anatawa12.forge:ForgeGradle:1.2-1.0.9")
