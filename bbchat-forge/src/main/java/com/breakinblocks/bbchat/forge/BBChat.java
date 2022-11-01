@@ -4,11 +4,12 @@ import com.breakinblocks.bbchat.common.ChatRelay;
 import com.breakinblocks.bbchat.common.DummyRelay;
 import com.breakinblocks.bbchat.common.IRelay;
 import com.breakinblocks.bbchat.common.PlayerCountInfo;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.ParseResults;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -68,7 +69,7 @@ public class BBChat {
                 BBChatConfig.COMMON.staffRoleId.get(),
                 BBChatConfig.COMMON.commandPrefix.get(),
                 BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList()),
-                (msg) -> server.getPlayerList().broadcastSystemMessage(Component.literal(msg), ChatType.CHAT),
+                (msg) -> server.getPlayerList().broadcastSystemMessage(Component.literal(msg), false),
                 () -> new PlayerCountInfo(server.getPlayerCount(), server.getMaxPlayers()),
                 this::handleCommand
         );
@@ -94,28 +95,28 @@ public class BBChat {
     @SubscribeEvent
     public void relayChat(ServerChatEvent event) {
         String name = event.getPlayer().getName().getString();
-        String text = event.getMessage();
+        String text = event.getMessage().getString();
         relay.onChat(name, text);
     }
 
     @SubscribeEvent
     public void relayLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        String name = event.getPlayer().getName().getString();
+        String name = event.getEntity().getName().getString();
         relay.onLogin(name);
     }
 
     @SubscribeEvent
     public void relayLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        String name = event.getPlayer().getName().getString();
+        String name = event.getEntity().getName().getString();
         relay.onLogout(name);
     }
 
     @SubscribeEvent
-    public void relayAchievement(AdvancementEvent event) {
+    public void relayAchievement(AdvancementEvent.AdvancementEarnEvent event) {
         Advancement advancement = event.getAdvancement();
         DisplayInfo displayInfo = advancement.getDisplay();
         if (displayInfo == null) return;
-        String name = event.getPlayer().getName().getString();
+        String name = event.getEntity().getName().getString();
         String title = displayInfo.getTitle().getString();
         String description = displayInfo.getDescription().getString();
         relay.onAchievement(name, title, description);
@@ -126,7 +127,7 @@ public class BBChat {
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void relayDeath(LivingDeathEvent event) {
-        final LivingEntity living = event.getEntityLiving();
+        final LivingEntity living = event.getEntity();
         if (isRealPlayer(living) || (living.hasCustomName() && isRealPlayer(event.getSource().getEntity()))) {
             final Level world = living.getCommandSenderWorld();
             if (!world.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) return;
@@ -162,7 +163,9 @@ public class BBChat {
                 name, Component.literal(displayName),
                 this.server, null
         );
-        server.getCommands().performCommand(source, fullCommand);
+        CommandDispatcher<CommandSourceStack> commandDispatcher = server.getCommands().getDispatcher();
+        ParseResults<CommandSourceStack> parseResults = commandDispatcher.parse(fullCommand, source);
+        server.getCommands().performCommand(parseResults, fullCommand);
     }
 
     @Nonnull

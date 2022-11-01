@@ -10,6 +10,8 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+
 dependencies {
     implementation("org.jetbrains:annotations:23.0.0")
     implementation("com.google.code.findbugs:jsr305:3.0.2")
