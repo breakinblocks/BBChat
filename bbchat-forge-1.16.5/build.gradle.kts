@@ -26,6 +26,14 @@ java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
 configure<UserDevExtension> {
     mappings(mappings_channel, mappings_version)
     runs {
+        all {
+            lazyToken("minecraft_classpath") {
+                val configurationCopy = configurations.implementation.get().copyRecursive()
+                configurationCopy.isCanBeResolved = true
+                configurationCopy.isTransitive = false
+                configurationCopy.resolve().joinToString(File.pathSeparator) { it.absolutePath }
+            }
+        }
         create("client") {
             workingDirectory(file("run"))
             property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
