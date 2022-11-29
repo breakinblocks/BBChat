@@ -4,14 +4,17 @@ import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.ChannelType;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.events.ReadyEvent;
-import net.dv8tion.jda.api.events.ReconnectedEvent;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.events.session.SessionRecreateEvent;
+import net.dv8tion.jda.api.events.session.SessionResumeEvent;
 import net.dv8tion.jda.api.hooks.AnnotatedEventManager;
 import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -80,7 +83,7 @@ public final class ChatRelay implements IRelay {
                 .create(
                         botToken,
                         GatewayIntent.GUILD_MESSAGES,
-                        GatewayIntent.GUILD_EMOJIS
+                        GatewayIntent.GUILD_EMOJIS_AND_STICKERS
                 )
                 .disableCache(
                         CacheFlag.ACTIVITY,
@@ -88,10 +91,13 @@ public final class ChatRelay implements IRelay {
                         CacheFlag.CLIENT_STATUS,
                         CacheFlag.MEMBER_OVERRIDES,
                         CacheFlag.ROLE_TAGS,
-                        CacheFlag.ONLINE_STATUS
+                        CacheFlag.FORUM_TAGS,
+                        CacheFlag.ONLINE_STATUS,
+                        CacheFlag.SCHEDULED_EVENTS
                 )
                 .enableCache(
-                        CacheFlag.EMOTE
+                        CacheFlag.EMOJI,
+                        CacheFlag.STICKER
                 )
                 .setMemberCachePolicy(MemberCachePolicy.NONE)
                 .setEventManager(new AnnotatedEventManager())
@@ -175,7 +181,7 @@ public final class ChatRelay implements IRelay {
 
     @SubscribeEvent
     public void relayDiscordMessageToMinecraft(MessageReceivedEvent event) {
-        if (event.getChannelType() != ChannelType.TEXT) return;
+        if (!event.isFromGuild()) return;
         if (event.getGuild().getIdLong() != guildId) return;
         if (event.getChannel().getIdLong() != channelId) return;
         if (event.getAuthor().isBot()) return; // Should this just ignore self?
@@ -199,7 +205,7 @@ public final class ChatRelay implements IRelay {
                     .filter(attachment -> attachment.getSize() <= MAX_COMMAND_FILE_SIZE)
                     .filter(attachment -> "txt".equals(attachment.getFileExtension()))
                     .findFirst()
-                    .map(Message.Attachment::retrieveInputStream)
+                    .map(attachment -> attachment.getProxy().download())
                     .ifPresent(future -> future
                             .thenApply(stream -> {
                                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
@@ -234,8 +240,11 @@ public final class ChatRelay implements IRelay {
     }
 
     private void sendQueueToDiscord() {
-        TextChannel channel = jda.getTextChannelById(channelId);
-        if (channel == null) return;
+        Guild guild = jda.getGuildById(guildId);
+        if (guild == null) return;
+        GuildChannel guildChannel = guild.getGuildChannelById(channelId);
+        if (!(guildChannel instanceof GuildMessageChannel)) return;
+        GuildMessageChannel channel = (GuildMessageChannel) guildChannel;
         for (CharSequence message = messageQueue.poll(); message != null; message = messageQueue.poll()) {
             CharSequence replaced = replaceEmotes(message);
             CharSequence truncated = replaced.subSequence(0, Math.min(MAX_DISCORD_MESSAGE_LENGTH, replaced.length()));
@@ -247,8 +256,8 @@ public final class ChatRelay implements IRelay {
         Matcher matcher = REGEX_EMOTE.matcher(message);
         StringBuffer buff = new StringBuffer();
         while (matcher.find()) {
-            Optional<Emote> emote = jda.getEmotesByName(matcher.group(1), false).stream().findFirst();
-            matcher.appendReplacement(buff, emote.map(Emote::getAsMention).orElseGet(matcher::group));
+            Optional<RichCustomEmoji> emote = jda.getEmojisByName(matcher.group(1), false).stream().findFirst();
+            matcher.appendReplacement(buff, emote.map(CustomEmoji::getAsMention).orElseGet(matcher::group));
         }
         matcher.appendTail(buff);
         return buff;
@@ -266,7 +275,7 @@ public final class ChatRelay implements IRelay {
     private void updatePlayerCount(boolean minusOne) {
         PlayerCountInfo info = playerCount.get();
         int current = info.getCurrent() + (minusOne ? -1 : 0);
-        jda.getPresence().setActivity(Activity.of(Activity.ActivityType.DEFAULT, "with " + current + "/" + info.getMax() + " players"));
+        jda.getPresence().setActivity(Activity.of(Activity.ActivityType.PLAYING, "with " + current + "/" + info.getMax() + " players"));
     }
 
     @SubscribeEvent
@@ -275,7 +284,12 @@ public final class ChatRelay implements IRelay {
     }
 
     @SubscribeEvent
-    public void sendQueueOnReconnect(ReconnectedEvent event) {
+    public void sendQueueOnSessionResume(SessionResumeEvent event) {
+        sendQueueToDiscord();
+    }
+
+    @SubscribeEvent
+    public void sendQueueOnSessionRecreate(SessionRecreateEvent event) {
         sendQueueToDiscord();
     }
 

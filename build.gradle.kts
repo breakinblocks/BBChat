@@ -9,12 +9,6 @@ allprojects {
 
 subprojects {
     repositories {
-        maven {
-            url = uri("https://m2.dv8tion.net/releases")
-            content {
-                includeGroup("net.dv8tion")
-            }
-        }
         mavenCentral {
             content {
                 includeGroup("com.fasterxml")
@@ -25,12 +19,14 @@ subprojects {
                 includeGroup("com.neovisionaries")
                 includeGroup("com.squareup.okhttp3")
                 includeGroup("com.squareup.okio")
+                includeGroup("net.dv8tion")
                 includeGroup("net.sf.trove4j")
                 includeGroup("org.apache")
                 includeGroup("org.apache.commons")
                 includeGroup("org.apache.logging")
                 includeGroup("org.apache.logging.log4j")
                 includeGroup("org.jetbrains")
+                includeGroup("org.jetbrains.kotlin")
                 includeGroup("org.slf4j")
                 includeGroup("org.sonatype.oss")
             }
