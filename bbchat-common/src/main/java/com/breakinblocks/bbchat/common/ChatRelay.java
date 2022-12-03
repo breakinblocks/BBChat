@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.Channel;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
@@ -57,6 +56,7 @@ public final class ChatRelay implements IRelay {
     private static final Pattern REGEX_EMOTE = Pattern.compile(":([A-Za-z0-9_]{2,32}):");
     private static final int MAX_DISCORD_MESSAGE_LENGTH = 2000;
     private static final int MAX_COMMAND_FILE_SIZE = 128 * 1024; // 128 KB should be plenty
+    private static final int MAX_MESSAGE_QUEUE_SIZE = 100;
     private static final long LOGIN_ACHIEVEMENT_DELAY_MILLIS = 5 * 1000;
     private final JDA jda;
     private final long guildId;
@@ -84,14 +84,14 @@ public final class ChatRelay implements IRelay {
         jda = JDABuilder
                 .create(
                         botToken,
+                        GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
                         GatewayIntent.GUILD_MESSAGES,
-                        GatewayIntent.GUILD_EMOJIS_AND_STICKERS
+                        GatewayIntent.MESSAGE_CONTENT
                 )
                 .disableCache(
                         CacheFlag.ACTIVITY,
                         CacheFlag.VOICE_STATE,
                         CacheFlag.CLIENT_STATUS,
-                        CacheFlag.MEMBER_OVERRIDES,
                         CacheFlag.ROLE_TAGS,
                         CacheFlag.FORUM_TAGS,
                         CacheFlag.ONLINE_STATUS,
@@ -99,7 +99,8 @@ public final class ChatRelay implements IRelay {
                 )
                 .enableCache(
                         CacheFlag.EMOJI,
-                        CacheFlag.STICKER
+                        CacheFlag.STICKER,
+                        CacheFlag.MEMBER_OVERRIDES
                 )
                 .setMemberCachePolicy(MemberCachePolicy.NONE)
                 .setEventManager(new AnnotatedEventManager())
@@ -288,9 +289,9 @@ public final class ChatRelay implements IRelay {
     private void sendQueueToDiscord() {
         Guild guild = jda.getGuildById(guildId);
         if (guild == null) return;
-        GuildChannel guildChannel = guild.getGuildChannelById(channelId);
-        if (!(guildChannel instanceof GuildMessageChannel)) return;
-        GuildMessageChannel channel = (GuildMessageChannel) guildChannel;
+        GuildMessageChannel channel = guild.getChannelById(GuildMessageChannel.class, channelId);
+        if (channel == null) return;
+        if (!channel.canTalk()) return;
         for (CharSequence message = messageQueue.poll(); message != null; message = messageQueue.poll()) {
             CharSequence replaced = replaceEmotes(message);
             CharSequence truncated = replaced.subSequence(0, Math.min(MAX_DISCORD_MESSAGE_LENGTH, replaced.length()));
@@ -310,6 +311,9 @@ public final class ChatRelay implements IRelay {
     }
 
     private void sendToDiscord(String message) {
+        while (messageQueue.size() >= MAX_MESSAGE_QUEUE_SIZE) {
+            messageQueue.poll();
+        }
         messageQueue.add(message);
         sendQueueToDiscord();
     }

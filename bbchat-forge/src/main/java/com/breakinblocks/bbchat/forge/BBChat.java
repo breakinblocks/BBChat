@@ -112,7 +112,7 @@ public class BBChat {
     }
 
     @SubscribeEvent
-    public void relayAchievement(AdvancementEvent.AdvancementEarnEvent event) {
+    public void relayAchievement(@SuppressWarnings("deprecation") AdvancementEvent.AdvancementEarnEvent event) {
         Advancement advancement = event.getAdvancement();
         DisplayInfo displayInfo = advancement.getDisplay();
         if (displayInfo == null) return;

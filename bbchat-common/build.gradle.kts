@@ -37,6 +37,8 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
 
         include(dependency("com.squareup.okhttp3:okhttp"))
         include(dependency("com.squareup.okio:okio"))
+        include(dependency("org.jetbrains.kotlin:kotlin-stdlib-common"))
+        include(dependency("org.jetbrains.kotlin:kotlin-stdlib"))
 
         include(dependency("net.sf.trove4j:trove4j"))
 
@@ -63,7 +65,11 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
 
     // com.squareup.okhttp3:okhttp
     relocatePackage("okhttp3")
+    // com.squareup.okio:okio
     relocatePackage("okio")
+    // org.jetbrains.kotlin:kotlin-stdlib
+    // org.jetbrains.kotlin:kotlin-stdlib-common
+    relocatePackage("kotlin")
 
     // net.sf.trove4j:trove4j
     relocatePackage("gnu.trove")
