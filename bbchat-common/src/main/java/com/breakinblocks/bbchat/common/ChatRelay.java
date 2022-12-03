@@ -7,6 +7,8 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
@@ -177,6 +179,50 @@ public final class ChatRelay implements IRelay {
             LOGGER.warn(desc + " failed to parse as unsigned long");
         }
         return 0L;
+    }
+
+    @SubscribeEvent
+    public void checkConfig(ReadyEvent event) {
+        Guild guild = jda.getGuildById(guildId);
+        if (guild == null) {
+            LOGGER.warn("Could not find guild with id: " + guildId);
+        }
+
+        Channel channel = jda.getChannelById(Channel.class, channelId);
+        GuildMessageChannel guildMessageChannel;
+        if (channel == null) {
+            guildMessageChannel = null;
+            LOGGER.warn("Could not find channel with id: " + channelId);
+        } else {
+            if (!(channel instanceof GuildMessageChannel)) {
+                guildMessageChannel = null;
+                LOGGER.warn("Channel '" + channel.getName() + "' is not a guild message channel.");
+            } else {
+                guildMessageChannel = (GuildMessageChannel) channel;
+                if (!guildMessageChannel.canTalk()) {
+                    LOGGER.warn("Bot does not have permission to talk in Channel '" + guildMessageChannel.getName() + "'. Make sure the bot can see the channel and send messages.");
+                }
+            }
+        }
+
+        Role staffRole = jda.getRoleById(staffRoleId);
+        if (staffRole == null) {
+            LOGGER.warn("Could not find staff role with id: " + staffRoleId);
+        }
+
+        if (guild != null && guildMessageChannel != null) {
+            Guild guildMessageChannelGuild = guildMessageChannel.getGuild();
+            if (guild.getIdLong() != guildMessageChannelGuild.getIdLong()) {
+                LOGGER.warn("Channel '" + guildMessageChannel.getName() + "' belongs to the guild '" + guildMessageChannelGuild.getName() + "'. Expected guild '" + guild.getName() + "'.");
+            }
+        }
+
+        if (guild != null && staffRole != null) {
+            Guild staffRoleGuild = staffRole.getGuild();
+            if (guild.getIdLong() != staffRoleGuild.getIdLong()) {
+                LOGGER.warn("Staff role '" + staffRole.getName() + "' belongs to the guild '" + staffRoleGuild.getName() + "'. Expected guild '" + guild.getName() + "'.");
+            }
+        }
     }
 
     @SubscribeEvent
