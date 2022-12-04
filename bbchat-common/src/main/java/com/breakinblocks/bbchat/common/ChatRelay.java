@@ -37,7 +37,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -58,6 +63,7 @@ public final class ChatRelay implements IRelay {
     private static final int MAX_COMMAND_FILE_SIZE = 128 * 1024; // 128 KB should be plenty
     private static final int MAX_MESSAGE_QUEUE_SIZE = 100;
     private static final long LOGIN_ACHIEVEMENT_DELAY_MILLIS = 5 * 1000;
+    private static final long SHUTDOWN_MESSAGES_TIMEOUT_MILLIS = 5 * 1000;
     private final JDA jda;
     private final long guildId;
     private final long channelId;
@@ -65,6 +71,7 @@ public final class ChatRelay implements IRelay {
     private final Set<String> commandPrefixes;
     private final Set<String> anyCommands;
     private final ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
+    private final Set<CompletableFuture<Message>> messageFutures = ConcurrentHashMap.newKeySet();
     private final Consumer<String> broadcastMessage;
     private final Supplier<PlayerCountInfo> playerCount;
     private final CommandHandler commandHandler;
@@ -295,7 +302,9 @@ public final class ChatRelay implements IRelay {
         for (CharSequence message = messageQueue.poll(); message != null; message = messageQueue.poll()) {
             CharSequence replaced = replaceEmotes(message);
             CharSequence truncated = replaced.subSequence(0, Math.min(MAX_DISCORD_MESSAGE_LENGTH, replaced.length()));
-            channel.sendMessage(truncated).submit();
+            CompletableFuture<Message> messageFuture = channel.sendMessage(truncated).submit();
+            messageFutures.add(messageFuture);
+            messageFuture.whenComplete((m, t) -> messageFutures.remove(messageFuture));
         }
     }
 
@@ -357,6 +366,13 @@ public final class ChatRelay implements IRelay {
     @Override
     public void onStopped() {
         sendToDiscord("**Server Stopped**");
+
+        try {
+            // Wait for the remaining messages to send with a timeout.
+            CompletableFuture.allOf(messageFutures.toArray(new CompletableFuture[0]))
+                    .get(SHUTDOWN_MESSAGES_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException ignored) {
+        }
     }
 
     @Override
