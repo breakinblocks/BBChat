@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +65,7 @@ public final class ChatRelay implements IRelay {
     private static final int MAX_MESSAGE_QUEUE_SIZE = 100;
     private static final long LOGIN_ACHIEVEMENT_DELAY_MILLIS = 5 * 1000;
     private static final long SHUTDOWN_MESSAGES_TIMEOUT_MILLIS = 5 * 1000;
+    private static final long SHUTDOWN_TIMEOUT_MILLIS = 10 * 1000;
     private final JDA jda;
     private final long guildId;
     private final long channelId;
@@ -355,6 +357,15 @@ public final class ChatRelay implements IRelay {
     @Override
     public void cleanup() {
         jda.shutdown();
+
+        try {
+            if (!jda.awaitShutdown(Duration.ofMillis(SHUTDOWN_TIMEOUT_MILLIS))) {
+                jda.shutdownNow();
+                jda.awaitShutdown();
+            }
+        } catch (InterruptedException ignored) {
+            jda.shutdownNow();
+        }
     }
 
     @Override
