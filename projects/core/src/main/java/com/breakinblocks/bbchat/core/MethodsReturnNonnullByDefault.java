@@ -1,4 +1,4 @@
-package com.breakinblocks.bbchat.common;
+package com.breakinblocks.bbchat.core;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;

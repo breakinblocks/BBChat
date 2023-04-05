@@ -1,4 +1,4 @@
-package com.breakinblocks.bbchat.common;
+package com.breakinblocks.bbchat.core;
 
 import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
@@ -51,9 +51,9 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.breakinblocks.bbchat.common.TextUtils.Formatting.BOLD;
-import static com.breakinblocks.bbchat.common.TextUtils.Formatting.ITALIC;
-import static com.breakinblocks.bbchat.common.TextUtils.Formatting.RESET;
+import static com.breakinblocks.bbchat.core.TextUtils.Formatting.BOLD;
+import static com.breakinblocks.bbchat.core.TextUtils.Formatting.ITALIC;
+import static com.breakinblocks.bbchat.core.TextUtils.Formatting.RESET;
 
 public final class ChatRelay implements IRelay {
     private static final Logger LOGGER = LogManager.getLogger();

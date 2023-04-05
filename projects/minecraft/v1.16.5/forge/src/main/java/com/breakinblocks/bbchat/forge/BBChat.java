@@ -1,9 +1,9 @@
 package com.breakinblocks.bbchat.forge;
 
-import com.breakinblocks.bbchat.common.ChatRelay;
-import com.breakinblocks.bbchat.common.DummyRelay;
-import com.breakinblocks.bbchat.common.IRelay;
-import com.breakinblocks.bbchat.common.PlayerCountInfo;
+import com.breakinblocks.bbchat.core.ChatRelay;
+import com.breakinblocks.bbchat.core.DummyRelay;
+import com.breakinblocks.bbchat.core.IRelay;
+import com.breakinblocks.bbchat.core.PlayerCountInfo;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.command.CommandSource;
