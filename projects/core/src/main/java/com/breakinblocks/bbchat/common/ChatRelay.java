@@ -3,6 +3,7 @@ package com.breakinblocks.bbchat.common;
 import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -21,6 +22,7 @@ import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.dv8tion.jda.internal.utils.PermissionUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -195,22 +197,22 @@ public final class ChatRelay implements IRelay {
     public void checkConfig(ReadyEvent event) {
         Guild guild = jda.getGuildById(guildId);
         if (guild == null) {
-            LOGGER.warn("Could not find guild with id: " + guildId);
+            LOGGER.warn("Could not find guild with id '" + guildId +"', make sure the guild id is correct and that the bot has been invited to the guild.");
         }
 
         Channel channel = jda.getChannelById(Channel.class, channelId);
         GuildMessageChannel guildMessageChannel;
         if (channel == null) {
             guildMessageChannel = null;
-            LOGGER.warn("Could not find channel with id: " + channelId);
+            LOGGER.warn("Could not find channel with id '" + channelId + "', make sure the channel id is correct and that the bot can view the channel (check the users list in the channel).");
         } else {
             if (!(channel instanceof GuildMessageChannel)) {
                 guildMessageChannel = null;
-                LOGGER.warn("Channel '" + channel.getName() + "' is not a guild message channel.");
+                LOGGER.warn("Channel '" + channel.getName() + "' is not a guild message channel (it might be a non-guild-message channel like a forum channel but not a thread inside it).");
             } else {
                 guildMessageChannel = (GuildMessageChannel) channel;
                 if (!guildMessageChannel.canTalk()) {
-                    LOGGER.warn("Bot does not have permission to talk in Channel '" + guildMessageChannel.getName() + "'. Make sure the bot can see the channel and send messages.");
+                    LOGGER.warn("Bot does not have permission to talk in Channel '" + guildMessageChannel.getName() + "'. Make sure the bot has permissions to send messages in the channel.");
                 }
             }
         }
