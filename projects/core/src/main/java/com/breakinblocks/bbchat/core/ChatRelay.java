@@ -3,7 +3,6 @@ package com.breakinblocks.bbchat.core;
 import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -22,7 +21,6 @@ import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import net.dv8tion.jda.internal.utils.PermissionUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -197,7 +195,7 @@ public final class ChatRelay implements IRelay {
     public void checkConfig(ReadyEvent event) {
         Guild guild = jda.getGuildById(guildId);
         if (guild == null) {
-            LOGGER.warn("Could not find guild with id '" + guildId +"', make sure the guild id is correct and that the bot has been invited to the guild.");
+            LOGGER.warn("Could not find guild with id '" + guildId + "', make sure the guild id is correct and that the bot has been invited to the guild.");
         }
 
         Channel channel = jda.getChannelById(Channel.class, channelId);
