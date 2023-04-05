@@ -60,7 +60,7 @@ configure<UserDevExtension> {
 
 dependencies {
     add("minecraft", "net.minecraftforge:forge:${mc_version}-${forge_version}")
-    implementation(project(path = ":bbchat-common", configuration = "shadow"))
+    implementation(project(path = ":projects:core", configuration = "shadow"))
 }
 
 configure<BlossomExtension> {
@@ -89,7 +89,7 @@ tasks.named<ProcessResources>("processResources") {
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     archiveClassifier.set("forge")
     dependencies {
-        include(project(":bbchat-common"))
+        include(project(":projects:core"))
     }
     exclude("dummyThing")
 }

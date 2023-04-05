@@ -10,6 +10,8 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
+base.archivesName.set("bbchat-core")
+
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
 
 dependencies {

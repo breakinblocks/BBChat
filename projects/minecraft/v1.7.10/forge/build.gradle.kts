@@ -44,7 +44,7 @@ configure<UserExtension> {
 }
 
 dependencies {
-    implementation(project(path = ":bbchat-common", configuration = "shadow"))
+    implementation(project(path = ":projects:core", configuration = "shadow"))
 }
 
 // Use Blossom instead of FG source replacement
@@ -82,7 +82,7 @@ tasks.named<Jar>("jar") {
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     archiveClassifier.set("forge")
     dependencies {
-        include(project(":bbchat-common"))
+        include(project(":projects:core"))
     }
     exclude("dummyThing")
     exclude(".cache")
