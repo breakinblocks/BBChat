@@ -61,12 +61,12 @@ pluginManagement {
 
 rootProject.name = "bbchat"
 
-include("bbchat-common")
-include("bbchat-forge")
-include("bbchat-forge-1.18.2")
-include("bbchat-forge-1.17.1")
-include("bbchat-forge-1.16.5")
-include("bbchat-forge-1.15.2")
-include("bbchat-forge-1.14.4")
-include("bbchat-forge-1.12.2")
-include("bbchat-forge-1.7.10")
+include("projects:core")
+include("projects:minecraft:latest:forge")
+include("projects:minecraft:v1.18.2:forge")
+include("projects:minecraft:v1.17.1:forge")
+include("projects:minecraft:v1.16.5:forge")
+include("projects:minecraft:v1.15.2:forge")
+include("projects:minecraft:v1.14.4:forge")
+include("projects:minecraft:v1.12.2:forge")
+include("projects:minecraft:v1.7.10:forge")

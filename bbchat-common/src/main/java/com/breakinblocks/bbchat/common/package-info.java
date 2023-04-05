@@ -1,5 +1,0 @@
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-package com.breakinblocks.bbchat.common;
-
-import javax.annotation.ParametersAreNonnullByDefault;
