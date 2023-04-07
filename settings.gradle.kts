@@ -14,6 +14,10 @@ pluginManagement {
                     useModule("net.kyori:blossom:1.3.1")
                 }
 
+                "org.spongepowered.gradle.vanilla" -> {
+                    useModule("org.spongepowered.gradle.vanilla:org.spongepowered.gradle.vanilla.gradle.plugin:0.2.1-SNAPSHOT")
+                }
+
                 "net.minecraftforge.gradle" -> {
                     useModule("net.minecraftforge.gradle:ForgeGradle:5.1.71")
                 }
@@ -29,6 +33,13 @@ pluginManagement {
         }
     }
     repositories {
+        maven {
+            url = uri("https://repo.spongepowered.org/repository/maven-public")
+            content {
+                includeGroup("org.spongepowered")
+                includeGroup("org.spongepowered.gradle.vanilla")
+            }
+        }
         maven {
             url = uri("https://maven.minecraftforge.net")
             content {
@@ -52,6 +63,7 @@ pluginManagement {
                 includeGroup("com.github.ben-manes")
                 includeGroup("com.gradle.publish")
                 includeGroup("gradle.plugin.com.github.johnrengelman")
+                includeGroup("gradle.plugin.org.jetbrains.gradle.plugin.idea-ext")
                 includeGroup("net.kyori")
             }
         }
@@ -62,6 +74,7 @@ pluginManagement {
 rootProject.name = "bbchat"
 
 include("projects:core")
+include("projects:minecraft:latest:vanilla")
 include("projects:minecraft:latest:forge")
 include("projects:minecraft:v1.18.2:forge")
 include("projects:minecraft:v1.17.1:forge")
