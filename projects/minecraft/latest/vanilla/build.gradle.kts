@@ -6,7 +6,7 @@ val mc_version: String by project
 
 plugins {
     id("com.github.ben-manes.versions")
-    `java`
+    java
     id("org.spongepowered.gradle.vanilla")
 }
 

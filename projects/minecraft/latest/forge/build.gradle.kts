@@ -3,6 +3,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecraftforge.gradle.userdev.UserDevExtension
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
+import org.gradle.util.Path
 
 val mod_version: String by project
 val mc_version: String by project
@@ -23,6 +24,10 @@ base.archivesName.set("bbchat-${mc_version}")
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 
+val parentPath = Path.path(project.path).parent!!
+val vanillaProject = project(parentPath.child("vanilla").path!!)
+evaluationDependsOn(vanillaProject.path)
+
 configure<UserDevExtension> {
     mappings(mappings_channel, mappings_version)
     runs {
@@ -40,7 +45,10 @@ configure<UserDevExtension> {
             property("forge.logging.console.level", "debug")
             mods {
                 create("bbchat") {
-                    sources = listOf(sourceSets["main"])
+                    sources = listOf(
+                        sourceSets["main"],
+                        vanillaProject.sourceSets["main"],
+                    )
                 }
             }
         }
@@ -51,7 +59,10 @@ configure<UserDevExtension> {
 
             mods {
                 create("bbchat") {
-                    sources = listOf(sourceSets["main"])
+                    sources = listOf(
+                        sourceSets["main"],
+                        vanillaProject.sourceSets["main"],
+                    )
                 }
             }
         }
@@ -62,7 +73,10 @@ configure<UserDevExtension> {
             setArgs(listOf("--mod", "bbchat", "--all", "--output", file("src/generated/resources/")))
             mods {
                 create("bbchat") {
-                    sources = listOf(sourceSets["main"])
+                    sources = listOf(
+                        sourceSets["main"],
+                        vanillaProject.sourceSets["main"],
+                    )
                 }
             }
         }
@@ -72,6 +86,11 @@ configure<UserDevExtension> {
 dependencies {
     add("minecraft", "net.minecraftforge:forge:${mc_version}-${forge_version}")
     implementation(project(path = ":projects:core", configuration = "shadow"))
+    compileOnly(vanillaProject)
+}
+
+tasks.withType<JavaCompile> {
+    source(vanillaProject.sourceSets["main"].allSource)
 }
 
 tasks.named<ProcessResources>("processResources") {
