@@ -9,6 +9,28 @@ allprojects {
 
 subprojects {
     repositories {
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Quilt"
+                    url = uri("https://maven.quiltmc.org/repository/release")
+                }
+            }
+            filter {
+                includeGroupByRegex("""^org\.quiltmc(?:\..+$|$)""")
+            }
+        }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Parchment"
+                    url = uri("https://maven.parchmentmc.org")
+                }
+            }
+            filter {
+                includeGroupByRegex("""^org\.parchmentmc(?:\..+$|$)""")
+            }
+        }
         mavenCentral {
             content {
                 includeGroup("com.fasterxml")

@@ -6,12 +6,12 @@ import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.gradle.util.Path
 
 val mod_version: String by project
-val mc_version: String by project
-val mc_version_range_supported: String by project
+val minecraft_version: String by project
+val minecraft_version_range_supported: String by project
 val forge_version: String by project
 val forge_version_range_supported: String by project
-val mappings_channel: String by project
-val mappings_version: String by project
+val parchment_minecraft_version: String by project
+val parchment_version: String by project
 
 plugins {
     id("com.github.ben-manes.versions")
@@ -20,16 +20,12 @@ plugins {
     id("org.parchmentmc.librarian.forgegradle")
 }
 
-base.archivesName.set("bbchat-${mc_version}")
-
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-
 val parentPath = Path.path(project.path).parent!!
 val vanillaProject = project(parentPath.child("vanilla").path!!)
 evaluationDependsOn(vanillaProject.path)
 
 configure<UserDevExtension> {
-    mappings(mappings_channel, mappings_version)
+    mappings("parchment", "${parchment_version}-${parchment_minecraft_version}")
     runs {
         all {
             lazyToken("minecraft_classpath") {
@@ -84,7 +80,7 @@ configure<UserDevExtension> {
 }
 
 dependencies {
-    add("minecraft", "net.minecraftforge:forge:${mc_version}-${forge_version}")
+    add("minecraft", "net.minecraftforge:forge:${minecraft_version}-${forge_version}")
     implementation(project(path = ":projects:core", configuration = "shadow"))
     compileOnly(vanillaProject)
 }
@@ -95,14 +91,14 @@ tasks.withType<JavaCompile> {
 
 tasks.named<ProcessResources>("processResources") {
     inputs.property("mod_version", mod_version)
-    inputs.property("mc_version_range_supported", mc_version_range_supported)
+    inputs.property("minecraft_version_range_supported", minecraft_version_range_supported)
     inputs.property("forge_version_range_supported", forge_version_range_supported)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from(sourceSets["main"].resources.srcDirs) {
         include("META-INF/mods.toml")
         expand(
             "mod_version" to mod_version,
-            "mc_version_range_supported" to mc_version_range_supported,
+            "minecraft_version_range_supported" to minecraft_version_range_supported,
             "forge_version_range_supported" to forge_version_range_supported
         )
     }

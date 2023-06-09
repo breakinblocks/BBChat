@@ -14,8 +14,8 @@ pluginManagement {
                     useModule("net.kyori:blossom:1.3.1")
                 }
 
-                "org.spongepowered.gradle.vanilla" -> {
-                    useModule("org.spongepowered.gradle.vanilla:org.spongepowered.gradle.vanilla.gradle.plugin:0.2.1-SNAPSHOT")
+                "org.quiltmc.loom" -> {
+                    useModule("org.quiltmc:loom:0.13.1")
                 }
 
                 "net.minecraftforge.gradle" -> {
@@ -29,32 +29,47 @@ pluginManagement {
                 "org.parchmentmc.librarian.forgegradle" -> {
                     useModule("org.parchmentmc.librarian.forgegradle:org.parchmentmc.librarian.forgegradle.gradle.plugin:1.2.0")
                 }
+
+                "fabric-loom" -> {
+                    useModule("fabric-loom:fabric-loom.gradle.plugin:0.13.1")
+                }
+
+                "io.github.juuxel.loom-quiltflower" -> {
+                    useModule("io.github.juuxel:loom-quiltflower:1.8.0")
+                }
             }
         }
     }
     repositories {
         maven {
-            url = uri("https://repo.spongepowered.org/repository/maven-public")
+            name = "Quilt"
+            url = uri("https://maven.quiltmc.org/repository/release")
             content {
-                includeGroup("org.spongepowered")
-                includeGroup("org.spongepowered.gradle.vanilla")
+                includeGroupByRegex("""^org\.quiltmc(?:\..+$|$)""")
             }
         }
         maven {
+            name = "MinecraftForge"
             url = uri("https://maven.minecraftforge.net")
             content {
                 includeGroup("de.oceanlabs.mcp")
                 includeGroup("net.minecraft")
-                includeGroup("net.minecraftforge")
-                includeGroup("net.minecraftforge.gradle")
+                includeGroupByRegex("""^net\.minecraftforge(?:\..+$|$)""")
             }
         }
         maven {
+            name = "Fabric"
+            url = uri("https://maven.fabricmc.net")
+            content {
+                includeGroup("fabric-loom")
+                includeGroupByRegex("""^net\.fabricmc(?:\..+$|$)""")
+            }
+        }
+        maven {
+            name = "Parchment"
             url = uri("https://maven.parchmentmc.org")
             content {
-                includeGroup("org.parchmentmc")
-                includeGroup("org.parchmentmc.feather")
-                includeGroup("org.parchmentmc.librarian.forgegradle")
+                includeGroupByRegex("""^org\.parchmentmc(?:\..+$|$)""")
             }
         }
         gradlePluginPortal {
@@ -62,6 +77,7 @@ pluginManagement {
             content {
                 includeGroup("com.github.ben-manes")
                 includeGroup("com.gradle.publish")
+                includeGroup("io.github.juuxel")
                 includeGroup("gradle.plugin.com.github.johnrengelman")
                 includeGroup("gradle.plugin.org.jetbrains.gradle.plugin.idea-ext")
                 includeGroup("net.kyori")
@@ -74,8 +90,12 @@ pluginManagement {
 rootProject.name = "bbchat"
 
 include("projects:core")
+
 include("projects:minecraft:latest:vanilla")
+include("projects:minecraft:latest:quilt")
 include("projects:minecraft:latest:forge")
+include("projects:minecraft:latest:fabric")
+
 include("projects:minecraft:v1.18.2:forge")
 include("projects:minecraft:v1.17.1:forge")
 include("projects:minecraft:v1.16.5:forge")

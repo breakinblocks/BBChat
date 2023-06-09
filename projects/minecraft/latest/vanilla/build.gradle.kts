@@ -1,25 +1,20 @@
-@file:Suppress("PropertyName")
+@file:Suppress("PropertyName", "UnstableApiUsage")
 
-import org.spongepowered.gradle.vanilla.MinecraftExtension
-
-val mc_version: String by project
+val minecraft_version: String by project
+val parchment_minecraft_version: String by project
+val parchment_version: String by project
 
 plugins {
-    id("com.github.ben-manes.versions")
-    java
-    id("org.spongepowered.gradle.vanilla")
-}
-
-base.archivesName.set("bbchat-${mc_version}")
-
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-
-configure<MinecraftExtension> {
-    version(mc_version)
+    id("org.quiltmc.loom")
 }
 
 dependencies {
     implementation(project(path = ":projects:core", configuration = "shadow"))
+    "minecraft"("com.mojang:minecraft:${minecraft_version}")
+    "mappings"(loom.layered {
+        this.officialMojangMappings { nameSyntheticMembers = false }
+        this.parchment("org.parchmentmc.data:parchment-${parchment_minecraft_version}:${parchment_version}@zip")
+    })
 }
 
 tasks.named<Jar>("jar") {
