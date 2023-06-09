@@ -14,12 +14,16 @@ pluginManagement {
                     useModule("net.kyori:blossom:1.3.1")
                 }
 
+                "org.spongepowered.gradle.vanilla" -> {
+                    useModule("org.spongepowered.gradle.vanilla:org.spongepowered.gradle.vanilla.gradle.plugin:0.2.1-SNAPSHOT")
+                }
+
                 "org.quiltmc.loom" -> {
-                    useModule("org.quiltmc:loom:0.13.1")
+                    useModule("org.quiltmc:loom:1.2.3")
                 }
 
                 "net.minecraftforge.gradle" -> {
-                    useModule("net.minecraftforge.gradle:ForgeGradle:5.1.71")
+                    useModule("net.minecraftforge.gradle:ForgeGradle:6.0.6")
                 }
 
                 "forge" -> {
@@ -31,7 +35,7 @@ pluginManagement {
                 }
 
                 "fabric-loom" -> {
-                    useModule("fabric-loom:fabric-loom.gradle.plugin:0.13.1")
+                    useModule("fabric-loom:fabric-loom.gradle.plugin:1.2.7")
                 }
 
                 "io.github.juuxel.loom-quiltflower" -> {
@@ -41,6 +45,13 @@ pluginManagement {
         }
     }
     repositories {
+        maven {
+            name = "Sponge"
+            url = uri("https://repo.spongepowered.org/repository/maven-public")
+            content {
+                includeGroupByRegex("""^org\.spongepowered(?:\..+$|$)""")
+            }
+        }
         maven {
             name = "Quilt"
             url = uri("https://maven.quiltmc.org/repository/release")
