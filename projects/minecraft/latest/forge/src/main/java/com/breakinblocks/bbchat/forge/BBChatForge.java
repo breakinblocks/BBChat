@@ -4,6 +4,7 @@ import com.breakinblocks.bbchat.core.ChatRelay;
 import com.breakinblocks.bbchat.core.DummyRelay;
 import com.breakinblocks.bbchat.core.IRelay;
 import com.breakinblocks.bbchat.core.PlayerCountInfo;
+import com.breakinblocks.bbchat.vanilla.BBChat;
 import com.breakinblocks.bbchat.vanilla.common.BBChatConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
@@ -46,9 +47,8 @@ import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-@Mod(BBChatForge.MODID)
+@Mod(BBChat.MOD_ID)
 public class BBChatForge {
-    public static final String MODID = "bbchat";
     private static final Logger LOGGER = LogManager.getLogger();
     private IRelay relay = DummyRelay.INSTANCE;
     private MinecraftServer server = null;
