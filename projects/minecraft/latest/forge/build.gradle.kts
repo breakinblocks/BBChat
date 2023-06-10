@@ -20,8 +20,8 @@ plugins {
     id("org.parchmentmc.librarian.forgegradle")
 }
 
-val parentPath = Path.path(project.path).parent!!
-val vanillaPath = parentPath.child("vanilla").path!!
+val parentPath = Path.path(project.path).parent!!.path!!
+val vanillaPath = Path.path(parentPath).child("vanilla").path!!
 evaluationDependsOn(vanillaPath)
 
 configure<UserDevExtension> {

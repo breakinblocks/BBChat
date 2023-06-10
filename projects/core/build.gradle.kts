@@ -29,8 +29,6 @@ dependencies {
 
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     dependencies {
-        include(dependency("com.google.code.findbugs:jsr305"))
-
         include(dependency("net.dv8tion:JDA"))
 
         include(dependency("com.fasterxml.jackson.core:jackson-databind"))

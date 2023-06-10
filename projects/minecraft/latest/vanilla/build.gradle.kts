@@ -17,6 +17,7 @@ configure<MinecraftExtension> {
 }
 
 dependencies {
+    implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = ":projects:core", configuration = "shadow"))
     api("fuzs.forgeconfigapiport:forgeconfigapiport-common:${forge_config_api_port_version}")
 }

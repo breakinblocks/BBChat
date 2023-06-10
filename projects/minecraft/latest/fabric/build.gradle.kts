@@ -1,6 +1,7 @@
 @file:Suppress("PropertyName", "UnstableApiUsage")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import net.fabricmc.loom.task.RemapJarTask
 import org.gradle.util.Path
 
 val mod_version: String by project
@@ -14,10 +15,11 @@ val forge_config_api_port_version: String by project
 plugins {
     id("com.github.johnrengelman.shadow")
     id("fabric-loom")
+    id("bbchat")
 }
 
-val parentPath = Path.path(project.path).parent!!
-val vanillaPath = parentPath.child("vanilla").path!!
+val parentPath = Path.path(project.path).parent!!.path!!
+val vanillaPath = Path.path(parentPath).child("vanilla").path!!
 evaluationDependsOn(vanillaPath)
 
 dependencies {
@@ -28,6 +30,7 @@ dependencies {
     })
     modImplementation("net.fabricmc:fabric-loader:${fabric_loader_version}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${fabric_api_version}")
+    implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = ":projects:core", configuration = "shadow"))
     implementation(project(path = vanillaPath))
     modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}")
@@ -45,12 +48,19 @@ tasks.named<ProcessResources>("processResources") {
         )
     }
     from(sourceSets["main"].resources.srcDirs) {
-        exclude("META-INF/mods.toml")
+        exclude("fabric.mod.json")
     }
 }
 
 tasks.withType<JavaCompile> {
     source(project(vanillaPath).sourceSets.main.get().allSource)
+}
+
+val remapJarMutexPath = bbchat.getMutexDir(minecraft_version, "remapJar")
+
+tasks.withType<RemapJarTask> {
+    // This is to prevent multiple of this task running at the same time in parallel builds.
+    outputs.dir(remapJarMutexPath)
 }
 
 tasks.named<Jar>("jar") {
