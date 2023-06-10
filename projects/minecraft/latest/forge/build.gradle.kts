@@ -21,8 +21,8 @@ plugins {
 }
 
 val parentPath = Path.path(project.path).parent!!
-val vanillaProject = project(parentPath.child("vanilla").path!!)
-evaluationDependsOn(vanillaProject.path)
+val vanillaPath = parentPath.child("vanilla").path!!
+evaluationDependsOn(vanillaPath)
 
 configure<UserDevExtension> {
     mappings("parchment", "${parchment_version}-${parchment_minecraft_version}")
@@ -43,7 +43,7 @@ configure<UserDevExtension> {
                 create("bbchat") {
                     sources = listOf(
                         sourceSets["main"],
-                        vanillaProject.sourceSets["main"],
+                        project(vanillaPath).sourceSets["main"],
                     )
                 }
             }
@@ -57,7 +57,7 @@ configure<UserDevExtension> {
                 create("bbchat") {
                     sources = listOf(
                         sourceSets["main"],
-                        vanillaProject.sourceSets["main"],
+                        project(vanillaPath).sourceSets["main"],
                     )
                 }
             }
@@ -71,7 +71,7 @@ configure<UserDevExtension> {
                 create("bbchat") {
                     sources = listOf(
                         sourceSets["main"],
-                        vanillaProject.sourceSets["main"],
+                        project(vanillaPath).sourceSets["main"],
                     )
                 }
             }
@@ -80,16 +80,17 @@ configure<UserDevExtension> {
 }
 
 dependencies {
-    add("minecraft", "net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+    "minecraft"("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
     implementation(project(path = ":projects:core", configuration = "shadow"))
-    compileOnly(vanillaProject)
+    implementation(project(path = vanillaPath))
 }
 
 tasks.withType<JavaCompile> {
-    source(vanillaProject.sourceSets["main"].allSource)
+    source(project(vanillaPath).sourceSets["main"].allSource)
 }
 
 tasks.named<ProcessResources>("processResources") {
+    from(project(vanillaPath).sourceSets.main.get().resources)
     inputs.property("mod_version", mod_version)
     inputs.property("minecraft_version_range_supported", minecraft_version_range_supported)
     inputs.property("forge_version_range_supported", forge_version_range_supported)
@@ -107,6 +108,10 @@ tasks.named<ProcessResources>("processResources") {
     }
 }
 
+tasks.withType<JavaCompile> {
+    source(project(vanillaPath).sourceSets.main.get().allSource)
+}
+
 tasks.named<Jar>("jar") {
     manifest {
         attributes(
@@ -121,7 +126,7 @@ tasks.named<Jar>("jar") {
 }
 
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
-    archiveClassifier.set("forge")
+    archiveClassifier.set(project.name)
     dependencies {
         include(project(":projects:core"))
     }

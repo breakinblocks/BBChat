@@ -4,6 +4,7 @@ import com.breakinblocks.bbchat.core.ChatRelay;
 import com.breakinblocks.bbchat.core.DummyRelay;
 import com.breakinblocks.bbchat.core.IRelay;
 import com.breakinblocks.bbchat.core.PlayerCountInfo;
+import com.breakinblocks.bbchat.vanilla.common.BBChatConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import net.minecraft.advancements.Advancement;
@@ -45,14 +46,14 @@ import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-@Mod(BBChat.MODID)
-public class BBChat {
+@Mod(BBChatForge.MODID)
+public class BBChatForge {
     public static final String MODID = "bbchat";
     private static final Logger LOGGER = LogManager.getLogger();
     private IRelay relay = DummyRelay.INSTANCE;
     private MinecraftServer server = null;
 
-    public BBChat() {
+    public BBChatForge() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BBChatConfig.commonSpec);
         // Ignore this mod being installed on either side
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));

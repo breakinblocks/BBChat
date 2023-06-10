@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "quilt_loader": {
+    "group": "com.breakinblocks.bbchat",
+    "id": "bbchat",
+    "version": "${mod_version}",
+    "metadata": {
+      "name": "BBChat",
+      "description": "Chat relay for Minecraft and Discord",
+      "contributors": {
+        "BBChat contributors": "Contributor"
+      },
+      "contact": {
+        "homepage": "https://github.com/breakinblocks/BBChat",
+        "issues": "https://github.com/breakinblocks/BBChat/issues",
+        "sources": "https://github.com/breakinblocks/BBChat"
+      }
+    },
+    "intermediate_mappings": "net.fabricmc:intermediary",
+    "entrypoints": {
+      "init": "com.breakinblocks.bbchat.quilt.BBChatQuilt"
+    },
+    "depends": [
+      {
+        "id": "quilt_loader",
+        "versions": "*"
+      },
+      {
+        "id": "quilted_fabric_api",
+        "versions": "*"
+      },
+      {
+        "id": "minecraft",
+        "versions": "*"
+      },
+      {
+        "id": "com_electronwill_night-config_core",
+        "versions": "*"
+      },
+      {
+        "id": "com_electronwill_night-config_toml",
+        "versions": "*"
+      }
+    ]
+  }
+}

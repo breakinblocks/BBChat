@@ -31,6 +31,18 @@ subprojects {
                 includeGroupByRegex("""^org\.parchmentmc(?:\..+$|$)""")
             }
         }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Fuzs Mod Resources"
+                    url = uri("https://raw.githubusercontent.com/Fuzss/modresources/main/maven")
+                }
+            }
+            filter {
+                includeGroupByRegex("""^fuzs(?:\..+$|$)""")
+                includeModule("net.minecraftforge", "forgeconfigapiport-fabric")
+            }
+        }
         mavenCentral {
             content {
                 includeGroup("com.fasterxml")
