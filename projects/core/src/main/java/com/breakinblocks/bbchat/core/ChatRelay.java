@@ -53,7 +53,7 @@ import static com.breakinblocks.bbchat.core.TextUtils.Formatting.BOLD;
 import static com.breakinblocks.bbchat.core.TextUtils.Formatting.ITALIC;
 import static com.breakinblocks.bbchat.core.TextUtils.Formatting.RESET;
 
-public final class ChatRelay implements IRelay {
+public final class ChatRelay implements Relay {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String FORMAT_CHAT = BOLD + "[%s]" + RESET + " %s";
     private static final String FORMAT_LOGIN = BOLD + "%s" + RESET + " joined the server";
@@ -129,7 +129,7 @@ public final class ChatRelay implements IRelay {
         this.commandHandler = commandHandler;
     }
 
-    public static IRelay create(
+    public static Relay create(
             String botToken,
             String guildId,
             String channelId,

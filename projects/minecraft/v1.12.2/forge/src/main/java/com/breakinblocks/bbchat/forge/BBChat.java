@@ -2,7 +2,7 @@ package com.breakinblocks.bbchat.forge;
 
 import com.breakinblocks.bbchat.core.ChatRelay;
 import com.breakinblocks.bbchat.core.DummyRelay;
-import com.breakinblocks.bbchat.core.IRelay;
+import com.breakinblocks.bbchat.core.Relay;
 import com.breakinblocks.bbchat.core.PlayerCountInfo;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
@@ -53,7 +53,7 @@ public class BBChat {
     public static final String MODID = "bbchat";
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String SHOW_DEATH_MESSAGES = "showDeathMessages";
-    private IRelay relay = DummyRelay.INSTANCE;
+    private Relay relay = DummyRelay.INSTANCE;
     private MinecraftServer server = null;
 
     public BBChat() {

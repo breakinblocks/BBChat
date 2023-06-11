@@ -2,7 +2,7 @@ package com.breakinblocks.bbchat.core;
 
 import javax.annotation.Nullable;
 
-public class DummyRelay implements IRelay {
+public class DummyRelay implements Relay {
     public static final DummyRelay INSTANCE = new DummyRelay();
 
     private DummyRelay() {

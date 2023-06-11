@@ -2,11 +2,11 @@ package com.breakinblocks.bbchat.core;
 
 import org.jetbrains.annotations.Nullable;
 
-public class ProxyRelay implements IRelay {
-    private IRelay relay = DummyRelay.INSTANCE;
+public class ProxyRelay implements Relay {
+    private Relay relay = DummyRelay.INSTANCE;
     private boolean isServerRunning = false;
 
-    public void setRelay(IRelay relay) {
+    public void setRelay(Relay relay) {
         this.relay = relay;
     }
 
