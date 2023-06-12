@@ -1,5 +1,9 @@
-package com.breakinblocks.bbchat.core;
+package com.breakinblocks.bbchat.core.impl;
 
+import com.breakinblocks.bbchat.core.CommandHandler;
+import com.breakinblocks.bbchat.core.PlayerCountInfo;
+import com.breakinblocks.bbchat.core.Relay;
+import com.breakinblocks.bbchat.core.TextUtils;
 import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;

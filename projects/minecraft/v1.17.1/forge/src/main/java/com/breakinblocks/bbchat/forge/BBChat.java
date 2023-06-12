@@ -1,7 +1,7 @@
 package com.breakinblocks.bbchat.forge;
 
-import com.breakinblocks.bbchat.core.ChatRelay;
-import com.breakinblocks.bbchat.core.DummyRelay;
+import com.breakinblocks.bbchat.core.impl.ChatRelay;
+import com.breakinblocks.bbchat.core.impl.DummyRelay;
 import com.breakinblocks.bbchat.core.Relay;
 import com.breakinblocks.bbchat.core.PlayerCountInfo;
 import net.minecraft.Util;
