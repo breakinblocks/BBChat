@@ -2,7 +2,7 @@ package com.breakinblocks.bbchat.forge;
 
 import com.breakinblocks.bbchat.core.impl.ChatRelay;
 import com.breakinblocks.bbchat.core.impl.DummyRelay;
-import com.breakinblocks.bbchat.core.Relay;
+import com.breakinblocks.bbchat.core.RelayService;
 import com.breakinblocks.bbchat.core.PlayerCountInfo;
 import com.breakinblocks.bbchat.vanilla.BBChat;
 import com.breakinblocks.bbchat.vanilla.common.BBChatConfig;
@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 @Mod(BBChat.MOD_ID)
 public class BBChatForge {
     private static final Logger LOGGER = LogManager.getLogger();
-    private Relay relay = DummyRelay.INSTANCE;
+    private RelayService relay = DummyRelay.INSTANCE;
     private MinecraftServer server = null;
 
     public BBChatForge() {

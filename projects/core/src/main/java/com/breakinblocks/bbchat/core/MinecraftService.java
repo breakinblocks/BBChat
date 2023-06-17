@@ -2,7 +2,8 @@ package com.breakinblocks.bbchat.core;
 
 import java.util.function.Consumer;
 
-public interface CommandHandler {
+@FunctionalInterface
+public interface MinecraftService {
     /**
      * Execute a command on the server.
      *

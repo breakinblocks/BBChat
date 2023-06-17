@@ -2,7 +2,7 @@ package com.breakinblocks.bbchat.core;
 
 import javax.annotation.Nullable;
 
-public interface Relay {
+public interface RelayService {
     void cleanup();
 
     void onStarted();

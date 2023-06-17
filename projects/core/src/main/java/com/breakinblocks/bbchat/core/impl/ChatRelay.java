@@ -1,8 +1,8 @@
 package com.breakinblocks.bbchat.core.impl;
 
-import com.breakinblocks.bbchat.core.CommandHandler;
+import com.breakinblocks.bbchat.core.MinecraftService;
 import com.breakinblocks.bbchat.core.PlayerCountInfo;
-import com.breakinblocks.bbchat.core.Relay;
+import com.breakinblocks.bbchat.core.RelayService;
 import com.breakinblocks.bbchat.core.TextUtils;
 import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
@@ -57,7 +57,7 @@ import static com.breakinblocks.bbchat.core.TextUtils.Formatting.BOLD;
 import static com.breakinblocks.bbchat.core.TextUtils.Formatting.ITALIC;
 import static com.breakinblocks.bbchat.core.TextUtils.Formatting.RESET;
 
-public final class ChatRelay implements Relay {
+public final class ChatRelay implements RelayService {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String FORMAT_CHAT = BOLD + "[%s]" + RESET + " %s";
     private static final String FORMAT_LOGIN = BOLD + "%s" + RESET + " joined the server";
@@ -80,7 +80,7 @@ public final class ChatRelay implements Relay {
     private final Set<CompletableFuture<Message>> messageFutures = ConcurrentHashMap.newKeySet();
     private final Consumer<String> broadcastMessage;
     private final Supplier<PlayerCountInfo> playerCount;
-    private final CommandHandler commandHandler;
+    private final MinecraftService minecraft;
     private final Map<String, Long> lastLogin = new HashMap<>();
 
     private ChatRelay(
@@ -92,7 +92,7 @@ public final class ChatRelay implements Relay {
             Collection<String> anyCommands,
             Consumer<String> broadcastMessage,
             Supplier<PlayerCountInfo> playerCount,
-            CommandHandler commandHandler
+            MinecraftService minecraft
     ) throws LoginException {
         jda = JDABuilder
                 .create(
@@ -130,10 +130,10 @@ public final class ChatRelay implements Relay {
         this.anyCommands = ImmutableSet.copyOf(anyCommands);
         this.broadcastMessage = broadcastMessage;
         this.playerCount = playerCount;
-        this.commandHandler = commandHandler;
+        this.minecraft = minecraft;
     }
 
-    public static Relay create(
+    public static RelayService create(
             String botToken,
             String guildId,
             String channelId,
@@ -142,7 +142,7 @@ public final class ChatRelay implements Relay {
             Collection<String> anyCommands,
             Consumer<String> broadcastMessage,
             Supplier<PlayerCountInfo> playerCount,
-            CommandHandler commandHandler
+            MinecraftService minecraft
     ) {
         long guildIdL = parseULongOrZero(guildId, "guildId");
         long channelIdL = parseULongOrZero(channelId, "channelId");
@@ -157,7 +157,7 @@ public final class ChatRelay implements Relay {
                 while (true) {
                     try {
                         LOGGER.info("Logging in to Discord...");
-                        ChatRelay chatRelay = new ChatRelay(botToken, guildIdL, channelIdL, staffRoleIdL, commandPrefix, anyCommands, broadcastMessage, playerCount, commandHandler);
+                        ChatRelay chatRelay = new ChatRelay(botToken, guildIdL, channelIdL, staffRoleIdL, commandPrefix, anyCommands, broadcastMessage, playerCount, minecraft);
                         if (proxyRelay.isServerRunning())
                             chatRelay.onStarted();
                         proxyRelay.setRelay(chatRelay);
@@ -295,7 +295,7 @@ public final class ChatRelay implements Relay {
             final String displayName = member.getEffectiveName();
             final String logName = member.getNickname() == null ? name : name + "/" + displayName;
             LOGGER.info(logName + " is running the command `" + fullCommand + "`");
-            commandHandler.handleCommand(isStaff, name, displayName, fullCommand, this::convertAndSendToDiscord);
+            minecraft.handleCommand(isStaff, name, displayName, fullCommand, this::convertAndSendToDiscord);
         }
     }
 
