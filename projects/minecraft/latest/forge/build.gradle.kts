@@ -90,6 +90,7 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.named<ProcessResources>("processResources") {
+    from(project(":projects:core").sourceSets.main.get().resources)
     from(project(vanillaPath).sourceSets.main.get().resources)
     inputs.property("mod_version", mod_version)
     inputs.property("minecraft_version_range_supported", minecraft_version_range_supported)

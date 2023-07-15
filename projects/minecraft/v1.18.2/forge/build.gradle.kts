@@ -75,6 +75,7 @@ dependencies {
 }
 
 tasks.named<ProcessResources>("processResources") {
+    from(project(":projects:core").sourceSets.main.get().resources)
     inputs.property("mod_version", mod_version)
     inputs.property("mc_version_range_supported", mc_version_range_supported)
     inputs.property("forge_version_range_supported", forge_version_range_supported)

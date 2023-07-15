@@ -71,6 +71,7 @@ configure<BlossomExtension> {
 }
 
 tasks.named<ProcessResources>("processResources") {
+    from(project(":projects:core").sourceSets.main.get().resources)
     inputs.property("mod_version", mod_version)
     inputs.property("mc_version", mc_version)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
