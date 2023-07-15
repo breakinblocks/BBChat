@@ -1,5 +1,6 @@
 package com.breakinblocks.bbchat.quilt;
 
+import com.breakinblocks.bbchat.quilt.common.BBChatQuiltEvents;
 import com.breakinblocks.bbchat.vanilla.BBChat;
 import com.breakinblocks.bbchat.vanilla.common.BBChatConfig;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
@@ -37,7 +38,7 @@ public class BBChatQuilt extends BBChat implements ModInitializer {
         ServerLifecycleEvents.READY.register(server -> relayServerStarted());
         ServerLifecycleEvents.STOPPING.register(server -> relayServerStopping());
         ServerLifecycleEvents.STOPPED.register(server -> relayServerStopped());
-        QuiltChatEvents.AFTER_PROCESS.register(EnumSet.of(QuiltMessageType.CHAT), rawMessage -> {
+        QuiltChatEvents.AFTER_PROCESS.register(EnumSet.of(QuiltMessageType.CHAT, QuiltMessageType.SERVER, QuiltMessageType.OUTBOUND), rawMessage -> {
             Player rawPlayer = rawMessage.getPlayer();
             if (!(rawPlayer instanceof ServerPlayer) || !(rawMessage instanceof ChatS2CMessage)) {
                 return;
@@ -50,7 +51,7 @@ public class BBChatQuilt extends BBChat implements ModInitializer {
         });
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> relayLogin(handler.getPlayer()));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> relayLogout(handler.getPlayer()));
-        // TODO: Advancements
+        BBChatQuiltEvents.ADVANCEMENT_GRANTED.register(BBChat::relayAchievement);
         LivingEntityDeathCallback.EVENT.register(this::relayDeath);
     }
 }

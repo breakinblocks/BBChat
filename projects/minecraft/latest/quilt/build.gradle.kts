@@ -86,4 +86,3 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
 tasks.named<DefaultTask>("build") {
     dependsOn(shadowJar)
 }
-//

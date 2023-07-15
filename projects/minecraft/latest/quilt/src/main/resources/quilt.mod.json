@@ -42,5 +42,6 @@
         "versions": "*"
       }
     ]
-  }
+  },
+  "mixin": "bbchat.quilt.mixins.json"
 }
