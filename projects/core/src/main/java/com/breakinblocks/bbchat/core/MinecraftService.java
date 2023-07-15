@@ -15,6 +15,8 @@ public interface MinecraftService {
 
     String getBotToken();
 
+    String getGuildId();
+
     String getChannelId();
 
     String getStaffRoleId();

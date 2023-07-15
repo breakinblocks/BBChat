@@ -1,13 +1,13 @@
 package com.breakinblocks.bbchat.core.impl;
 
-import com.breakinblocks.bbchat.core.RelayService;
+import com.breakinblocks.bbchat.core.RelayEndpoint;
 import org.jetbrains.annotations.Nullable;
 
-public class ProxyRelay implements RelayService {
-    private RelayService relay = DummyRelay.INSTANCE;
+public class ProxyRelay implements RelayEndpoint {
+    private RelayEndpoint relay = DummyRelay.INSTANCE;
     private boolean isServerRunning = false;
 
-    public void setRelay(RelayService relay) {
+    public void setRelay(RelayEndpoint relay) {
         this.relay = relay;
     }
 

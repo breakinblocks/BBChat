@@ -2,6 +2,7 @@ package com.breakinblocks.bbchat.core.impl;
 
 import com.breakinblocks.bbchat.core.MinecraftService;
 import com.breakinblocks.bbchat.core.PlayerCountInfo;
+import com.breakinblocks.bbchat.core.RelayEndpoint;
 import com.breakinblocks.bbchat.core.RelayService;
 import com.breakinblocks.bbchat.core.TextUtils;
 import com.google.common.collect.ImmutableSet;
@@ -57,7 +58,7 @@ import static com.breakinblocks.bbchat.core.TextUtils.Formatting.BOLD;
 import static com.breakinblocks.bbchat.core.TextUtils.Formatting.ITALIC;
 import static com.breakinblocks.bbchat.core.TextUtils.Formatting.RESET;
 
-public final class ChatRelay implements RelayService {
+public final class ChatRelay implements RelayEndpoint {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String FORMAT_CHAT = BOLD + "[%s]" + RESET + " %s";
     private static final String FORMAT_LOGIN = BOLD + "%s" + RESET + " joined the server";
@@ -133,7 +134,7 @@ public final class ChatRelay implements RelayService {
         this.minecraft = minecraft;
     }
 
-    public static RelayService create(
+    public static RelayEndpoint create(
             String botToken,
             String guildId,
             String channelId,

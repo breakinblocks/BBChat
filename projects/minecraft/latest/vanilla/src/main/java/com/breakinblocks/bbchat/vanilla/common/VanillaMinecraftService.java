@@ -25,6 +25,11 @@ public abstract class VanillaMinecraftService implements MinecraftService {
     }
 
     @Override
+    public String getGuildId() {
+        return BBChatConfig.COMMON.guildId.get();
+    }
+
+    @Override
     public String getChannelId() {
         return BBChatConfig.COMMON.channelId.get();
     }

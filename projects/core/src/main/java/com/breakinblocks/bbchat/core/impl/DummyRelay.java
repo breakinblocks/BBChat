@@ -1,10 +1,10 @@
 package com.breakinblocks.bbchat.core.impl;
 
-import com.breakinblocks.bbchat.core.RelayService;
+import com.breakinblocks.bbchat.core.RelayEndpoint;
 
 import javax.annotation.Nullable;
 
-public class DummyRelay implements RelayService {
+public class DummyRelay implements RelayEndpoint {
     public static final DummyRelay INSTANCE = new DummyRelay();
 
     private DummyRelay() {
