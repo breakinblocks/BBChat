@@ -295,7 +295,7 @@ public final class ChatRelay implements RelayService {
             final String displayName = member.getEffectiveName();
             final String logName = member.getNickname() == null ? name : name + "/" + displayName;
             LOGGER.info(logName + " is running the command `" + fullCommand + "`");
-            minecraft.handleCommand(isStaff, name, displayName, fullCommand, this::convertAndSendToDiscord);
+            minecraft.onCommand(isStaff, name, displayName, fullCommand, this::convertAndSendToDiscord);
         }
     }
 
