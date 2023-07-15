@@ -1,10 +1,7 @@
-package com.breakinblocks.bbchat.core.impl;
+package com.breakinblocks.bbchat.core.internal;
 
-import com.breakinblocks.bbchat.core.MinecraftService;
-import com.breakinblocks.bbchat.core.PlayerCountInfo;
-import com.breakinblocks.bbchat.core.RelayEndpoint;
-import com.breakinblocks.bbchat.core.RelayService;
-import com.breakinblocks.bbchat.core.TextUtils;
+import com.breakinblocks.bbchat.core.api.MinecraftService;
+import com.breakinblocks.bbchat.core.api.PlayerCountInfo;
 import com.google.common.collect.ImmutableSet;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -54,9 +51,9 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.breakinblocks.bbchat.core.TextUtils.Formatting.BOLD;
-import static com.breakinblocks.bbchat.core.TextUtils.Formatting.ITALIC;
-import static com.breakinblocks.bbchat.core.TextUtils.Formatting.RESET;
+import static com.breakinblocks.bbchat.core.internal.TextUtils.Formatting.BOLD;
+import static com.breakinblocks.bbchat.core.internal.TextUtils.Formatting.ITALIC;
+import static com.breakinblocks.bbchat.core.internal.TextUtils.Formatting.RESET;
 
 public final class ChatRelay implements RelayEndpoint {
     private static final Logger LOGGER = LogManager.getLogger();

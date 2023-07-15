@@ -1,6 +1,5 @@
-package com.breakinblocks.bbchat.core.impl;
+package com.breakinblocks.bbchat.core.internal;
 
-import com.breakinblocks.bbchat.core.RelayEndpoint;
 import org.jetbrains.annotations.Nullable;
 
 public class ProxyRelay implements RelayEndpoint {

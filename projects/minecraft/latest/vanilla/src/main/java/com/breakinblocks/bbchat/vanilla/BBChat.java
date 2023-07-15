@@ -1,6 +1,6 @@
 package com.breakinblocks.bbchat.vanilla;
 
-import com.breakinblocks.bbchat.core.RelayService;
+import com.breakinblocks.bbchat.core.api.RelayService;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.network.chat.Component;

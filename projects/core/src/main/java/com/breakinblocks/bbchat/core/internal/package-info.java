@@ -1,7 +1,7 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package com.breakinblocks.bbchat.core.impl;
+package com.breakinblocks.bbchat.core.internal;
 
-import com.breakinblocks.bbchat.core.MethodsReturnNonnullByDefault;
+import com.breakinblocks.bbchat.core.api.MethodsReturnNonnullByDefault;
 
 import javax.annotation.ParametersAreNonnullByDefault;

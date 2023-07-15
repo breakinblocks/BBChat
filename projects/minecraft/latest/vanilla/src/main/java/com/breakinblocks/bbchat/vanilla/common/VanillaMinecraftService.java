@@ -1,7 +1,7 @@
 package com.breakinblocks.bbchat.vanilla.common;
 
-import com.breakinblocks.bbchat.core.MinecraftService;
-import com.breakinblocks.bbchat.core.PlayerCountInfo;
+import com.breakinblocks.bbchat.core.api.MinecraftService;
+import com.breakinblocks.bbchat.core.api.PlayerCountInfo;
 import com.breakinblocks.bbchat.vanilla.BBChat;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;

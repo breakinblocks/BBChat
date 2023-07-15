@@ -1,6 +1,4 @@
-package com.breakinblocks.bbchat.core.impl;
-
-import com.breakinblocks.bbchat.core.RelayEndpoint;
+package com.breakinblocks.bbchat.core.internal;
 
 import javax.annotation.Nullable;
 

@@ -1,8 +1,7 @@
-package com.breakinblocks.bbchat.core.impl;
+package com.breakinblocks.bbchat.core.internal;
 
-import com.breakinblocks.bbchat.core.MinecraftService;
-import com.breakinblocks.bbchat.core.RelayEndpoint;
-import com.breakinblocks.bbchat.core.RelayService;
+import com.breakinblocks.bbchat.core.api.MinecraftService;
+import com.breakinblocks.bbchat.core.api.RelayService;
 import org.jetbrains.annotations.Nullable;
 
 public class RelayServiceImpl implements RelayService {
