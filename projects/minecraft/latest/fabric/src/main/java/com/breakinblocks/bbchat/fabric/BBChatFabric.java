@@ -1,5 +1,6 @@
 package com.breakinblocks.bbchat.fabric;
 
+import com.breakinblocks.bbchat.fabric.common.BBChatFabricEvents;
 import com.breakinblocks.bbchat.vanilla.BBChat;
 import com.breakinblocks.bbchat.vanilla.common.BBChatConfig;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
@@ -37,7 +38,7 @@ public class BBChatFabric extends BBChat implements ModInitializer {
         });
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> relayLogin(handler.getPlayer()));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> relayLogout(handler.getPlayer()));
-        // TODO: Advancements
+        BBChatFabricEvents.ADVANCEMENT_GRANTED.register(BBChat::relayAchievement);
         ServerLivingEntityEvents.AFTER_DEATH.register(this::relayDeath);
     }
 }
