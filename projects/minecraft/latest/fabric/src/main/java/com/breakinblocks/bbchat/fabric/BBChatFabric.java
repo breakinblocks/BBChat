@@ -4,11 +4,40 @@ import com.breakinblocks.bbchat.vanilla.BBChat;
 import com.breakinblocks.bbchat.vanilla.common.BBChatConfig;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.ChatType;
 import net.minecraftforge.fml.config.ModConfig;
 
-public class BBChatFabric implements ModInitializer {
+public class BBChatFabric extends BBChat implements ModInitializer {
+    private ChatType chatTypeChat;
+
     @Override
     public void onInitialize() {
         ForgeConfigRegistry.INSTANCE.register(BBChat.MOD_ID, ModConfig.Type.COMMON, BBChatConfig.commonSpec);
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+            setServer(server);
+            Registry<ChatType> registry = server.registryAccess().registryOrThrow(Registries.CHAT_TYPE);
+            chatTypeChat = registry.getOrThrow(ChatType.CHAT);
+            relayServerStarting();
+        });
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> relayServerStarted());
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> relayServerStopping());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> relayServerStopped());
+        ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> {
+            if (params.chatType() != chatTypeChat) {
+                return;
+            }
+
+            relayChat(sender, message.decoratedContent());
+        });
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> relayLogin(handler.getPlayer()));
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> relayLogout(handler.getPlayer()));
+        // TODO: Advancements
+        ServerLivingEntityEvents.AFTER_DEATH.register(this::relayDeath);
     }
 }
