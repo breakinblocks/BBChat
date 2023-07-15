@@ -24,6 +24,13 @@ public interface MinecraftService {
     Collection<String> getAnyCommands();
 
     /**
+     * Get info about the player count.
+     *
+     * @return Current and maximum players.
+     */
+    PlayerCountInfo getPlayerCountInfo();
+
+    /**
      * Send a message to all players.
      *
      * @param message Message to send
