@@ -6,10 +6,15 @@ import org.jetbrains.annotations.Nullable;
 
 public class RelayServiceImpl implements RelayService {
     private RelayEndpoint endpoint = DummyRelay.INSTANCE;
+    private MinecraftService minecraft;
+
+    @Override
+    public void setMinecraftService(MinecraftService minecraftService) {
+        minecraft = minecraftService;
+    }
 
     @Override
     public void onStarting() {
-        MinecraftService minecraft = MinecraftService.INSTANCE;
         endpoint = ChatRelay.create(
                 minecraft.getBotToken(),
                 minecraft.getGuildId(),
@@ -17,8 +22,8 @@ public class RelayServiceImpl implements RelayService {
                 minecraft.getStaffRoleId(),
                 minecraft.getCommandPrefix(),
                 minecraft.getAnyCommands(),
-                MinecraftService.INSTANCE::onMessage,
-                MinecraftService.INSTANCE::getPlayerCountInfo,
+                minecraft::onMessage,
+                minecraft::getPlayerCountInfo,
                 minecraft
         );
     }

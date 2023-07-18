@@ -10,7 +10,14 @@ public interface RelayService {
     /**
      * For use by the game.
      */
-    public static final RelayService INSTANCE = RelayUtils.loadSingleService(RelayService.class);
+    public static final RelayService INSTANCE = RelayUtils.loadClass("com.breakinblocks.bbchat.core.internal.RelayServiceImpl");
+
+    /**
+     * Assign an implementation of {@link MinecraftService} here.
+     *
+     * @param minecraftService implemented by the game.
+     */
+    void setMinecraftService(MinecraftService minecraftService);
 
     /**
      * Server is starting.

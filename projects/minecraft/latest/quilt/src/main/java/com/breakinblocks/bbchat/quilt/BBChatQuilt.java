@@ -1,6 +1,7 @@
 package com.breakinblocks.bbchat.quilt;
 
 import com.breakinblocks.bbchat.quilt.common.BBChatQuiltEvents;
+import com.breakinblocks.bbchat.quilt.common.QuiltMinecraftService;
 import com.breakinblocks.bbchat.vanilla.BBChat;
 import com.breakinblocks.bbchat.vanilla.common.BBChatConfig;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
@@ -25,6 +26,10 @@ import java.util.Objects;
 
 public class BBChatQuilt extends BBChat implements ModInitializer {
     private ChatType chatTypeChat;
+
+    public BBChatQuilt() {
+        super(new QuiltMinecraftService());
+    }
 
     @Override
     public void onInitialize(ModContainer mod) {

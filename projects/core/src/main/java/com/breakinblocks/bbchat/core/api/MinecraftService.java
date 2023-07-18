@@ -5,14 +5,9 @@ import java.util.function.Consumer;
 
 /**
  * Events that the relay fires that the game should handle.
- * To be implemented by the game as a service.
+ * To be implemented by the game as a service an supplied to {@link RelayService#setMinecraftService(MinecraftService)}.
  */
 public interface MinecraftService {
-    /**
-     * For use by core.
-     */
-    MinecraftService INSTANCE = RelayUtils.loadSingleService(MinecraftService.class);
-
     String getBotToken();
 
     String getGuildId();
