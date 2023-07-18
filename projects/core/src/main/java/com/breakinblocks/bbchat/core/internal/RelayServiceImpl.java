@@ -35,6 +35,8 @@ public class RelayServiceImpl implements RelayService {
     @Override
     public void onStopped() {
         endpoint.onStopped();
+        endpoint.cleanup();
+        endpoint = DummyRelay.INSTANCE;
     }
 
     @Override
