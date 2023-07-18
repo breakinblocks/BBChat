@@ -1,6 +1,5 @@
 @file:Suppress("PropertyName", "UnstableApiUsage")
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.fabricmc.loom.task.RemapJarTask
 import org.gradle.util.Path
 
@@ -42,7 +41,7 @@ tasks.withType<JavaCompile> {
     source(project(vanillaPath).sourceSets.main.get().allSource)
 }
 
-tasks.named<ProcessResources>("processResources") {
+tasks.processResources {
     from(project(vanillaPath).sourceSets.main.get().resources)
     inputs.property("mod_version", mod_version)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -64,7 +63,7 @@ tasks.withType<RemapJarTask> {
     outputs.dir(remapJarMutexPath)
 }
 
-tasks.named<Jar>("jar") {
+tasks.jar {
     manifest {
         attributes(
             "Specification-Title" to "BBChat",
@@ -77,13 +76,13 @@ tasks.named<Jar>("jar") {
     }
 }
 
-val shadowJar = tasks.named<ShadowJar>("shadowJar") {
+tasks.shadowJar {
     archiveClassifier.set(project.name)
     dependencies {
         include(project(corePath))
     }
 }
 
-tasks.named<DefaultTask>("build") {
-    dependsOn(shadowJar)
+tasks.build {
+    dependsOn(tasks.shadowJar)
 }

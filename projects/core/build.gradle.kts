@@ -1,7 +1,5 @@
 @file:Suppress("PropertyName")
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 val jda_version: String by project
 
 plugins {
@@ -27,7 +25,7 @@ dependencies {
     }
 }
 
-val shadowJar = tasks.named<ShadowJar>("shadowJar") {
+tasks.shadowJar {
     dependencies {
         include(dependency("net.dv8tion:JDA"))
 
@@ -99,6 +97,6 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     exclude("module-info.class") // Java 9 feature
 }
 
-tasks.named<DefaultTask>("build") {
-    dependsOn(shadowJar)
+tasks.build {
+    dependsOn(tasks.shadowJar)
 }

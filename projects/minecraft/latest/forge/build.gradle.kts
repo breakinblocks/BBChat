@@ -1,6 +1,5 @@
 @file:Suppress("PropertyName")
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecraftforge.gradle.userdev.UserDevExtension
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.gradle.util.Path
@@ -82,7 +81,7 @@ tasks.withType<JavaCompile> {
     source(project(vanillaPath).sourceSets.main.get().allSource)
 }
 
-tasks.named<ProcessResources>("processResources") {
+tasks.processResources {
     from(project(vanillaPath).sourceSets.main.get().resources)
     inputs.property("mod_version", mod_version)
     inputs.property("minecraft_version_range_supported", minecraft_version_range_supported)
@@ -101,7 +100,7 @@ tasks.named<ProcessResources>("processResources") {
     }
 }
 
-tasks.named<Jar>("jar") {
+tasks.jar {
     manifest {
         attributes(
             "Specification-Title" to "BBChat",
@@ -114,7 +113,7 @@ tasks.named<Jar>("jar") {
     }
 }
 
-val shadowJar = tasks.named<ShadowJar>("shadowJar") {
+tasks.shadowJar {
     archiveClassifier.set(project.name)
     dependencies {
         include(project(corePath))
@@ -125,6 +124,6 @@ extensions.configure<NamedDomainObjectContainer<RenameJarInPlace>> {
     create("shadowJar")
 }
 
-tasks.named<DefaultTask>("build") {
-    dependsOn(shadowJar)
+tasks.build {
+    dependsOn(tasks.shadowJar)
 }
