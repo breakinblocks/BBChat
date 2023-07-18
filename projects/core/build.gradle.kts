@@ -87,7 +87,14 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     // org.slf4j:slf4j-api
     relocatePackage("org.slf4j")
 
-    exclude("META-INF/**")
+    exclude { fte ->
+        // FileTreeElement returns null for file when it comes from a jar file (dependency).
+        // This allows us to avoid excluding META-INF from our project's resources.
+        // Might need to fix this in the future since we are relying on a bug...?
+        // It's marked as non-nullable and the documentation says that it "Never returns null".
+        @Suppress("UNNECESSARY_SAFE_CALL", "SENSELESS_COMPARISON")
+        fte.file == null && fte.relativePath.startsWith("META-INF/")
+    }
 
     exclude("module-info.class") // Java 9 feature
 }

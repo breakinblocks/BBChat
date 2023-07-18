@@ -18,6 +18,7 @@ plugins {
     id("bbchat")
 }
 
+val corePath = ":projects:core"
 val parentPath = Path.path(project.path).parent!!.path!!
 val vanillaPath = Path.path(parentPath).child("vanilla").path!!
 evaluationDependsOn(vanillaPath)
@@ -31,14 +32,17 @@ dependencies {
     modImplementation("org.quiltmc:quilt-loader:${quilt_loader_version}")
     modImplementation("org.quiltmc:qsl:${qsl_version}+${minecraft_version}")
     implementation("com.google.code.findbugs:jsr305:3.0.2")
-    implementation(project(path = ":projects:core", configuration = "shadow"))
-    implementation(project(path = vanillaPath))
+    implementation(project(path = corePath, configuration = "shadow"))
+    compileOnly(project(path = vanillaPath))
     modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}")
     include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}")
 }
 
+tasks.withType<JavaCompile> {
+    source(project(vanillaPath).sourceSets.main.get().allSource)
+}
+
 tasks.named<ProcessResources>("processResources") {
-    from(project(":projects:core").sourceSets.main.get().resources)
     from(project(vanillaPath).sourceSets.main.get().resources)
     inputs.property("mod_version", mod_version)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -51,10 +55,6 @@ tasks.named<ProcessResources>("processResources") {
     from(sourceSets["main"].resources.srcDirs) {
         exclude("quilt.mod.json")
     }
-}
-
-tasks.withType<JavaCompile> {
-    source(project(vanillaPath).sourceSets.main.get().allSource)
 }
 
 val remapJarMutexPath = bbchat.getMutexDir(minecraft_version, "remapJar")
@@ -80,7 +80,7 @@ tasks.named<Jar>("jar") {
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     archiveClassifier.set(project.name)
     dependencies {
-        include(project(":projects:core"))
+        include(project(corePath))
     }
 }
 

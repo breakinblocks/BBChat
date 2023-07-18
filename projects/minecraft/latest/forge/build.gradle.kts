@@ -20,6 +20,7 @@ plugins {
     id("org.parchmentmc.librarian.forgegradle")
 }
 
+val corePath = ":projects:core"
 val parentPath = Path.path(project.path).parent!!.path!!
 val vanillaPath = Path.path(parentPath).child("vanilla").path!!
 evaluationDependsOn(vanillaPath)
@@ -27,14 +28,6 @@ evaluationDependsOn(vanillaPath)
 configure<UserDevExtension> {
     mappings("parchment", "${parchment_version}-${parchment_minecraft_version}")
     runs {
-        all {
-            lazyToken("minecraft_classpath") {
-                val configurationCopy = configurations.implementation.get().copyRecursive()
-                configurationCopy.isCanBeResolved = true
-                configurationCopy.isTransitive = false
-                configurationCopy.resolve().joinToString(File.pathSeparator) { it.absolutePath }
-            }
-        }
         create("client") {
             workingDirectory(file("run"))
             property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
@@ -80,17 +73,16 @@ configure<UserDevExtension> {
 }
 
 dependencies {
-    "minecraft"("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
-    implementation(project(path = ":projects:core", configuration = "shadow"))
-    implementation(project(path = vanillaPath))
+    minecraft("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+    minecraftLibrary(project(path = corePath, configuration = "shadow"))
+    compileOnly(project(path = vanillaPath))
 }
 
 tasks.withType<JavaCompile> {
-    source(project(vanillaPath).sourceSets["main"].allSource)
+    source(project(vanillaPath).sourceSets.main.get().allSource)
 }
 
 tasks.named<ProcessResources>("processResources") {
-    from(project(":projects:core").sourceSets.main.get().resources)
     from(project(vanillaPath).sourceSets.main.get().resources)
     inputs.property("mod_version", mod_version)
     inputs.property("minecraft_version_range_supported", minecraft_version_range_supported)
@@ -109,10 +101,6 @@ tasks.named<ProcessResources>("processResources") {
     }
 }
 
-tasks.withType<JavaCompile> {
-    source(project(vanillaPath).sourceSets.main.get().allSource)
-}
-
 tasks.named<Jar>("jar") {
     manifest {
         attributes(
@@ -129,7 +117,7 @@ tasks.named<Jar>("jar") {
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     archiveClassifier.set(project.name)
     dependencies {
-        include(project(":projects:core"))
+        include(project(corePath))
     }
 }
 

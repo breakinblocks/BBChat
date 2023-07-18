@@ -7,7 +7,7 @@ pluginManagement {
                 }
 
                 "com.github.johnrengelman.shadow" -> {
-                    useModule("gradle.plugin.com.github.johnrengelman:shadow:7.1.2")
+                    useModule("com.github.johnrengelman:shadow:8.1.1")
                 }
 
                 "net.kyori.blossom" -> {
@@ -23,7 +23,7 @@ pluginManagement {
                 }
 
                 "net.minecraftforge.gradle" -> {
-                    useModule("net.minecraftforge.gradle:ForgeGradle:6.0.6")
+                    useModule("net.minecraftforge.gradle:ForgeGradle:6.0.11")
                 }
 
                 "forge" -> {
@@ -87,9 +87,9 @@ pluginManagement {
             // Gradle plugin portal includes jcenter, migrate away from this if possible
             content {
                 includeGroup("com.github.ben-manes")
+                includeGroup("com.github.johnrengelman")
                 includeGroup("com.gradle.publish")
                 includeGroup("io.github.juuxel")
-                includeGroup("gradle.plugin.com.github.johnrengelman")
                 includeGroup("gradle.plugin.org.jetbrains.gradle.plugin.idea-ext")
                 includeGroup("net.kyori")
             }
