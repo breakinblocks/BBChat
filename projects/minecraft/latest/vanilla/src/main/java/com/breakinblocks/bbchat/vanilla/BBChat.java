@@ -39,7 +39,7 @@ public class BBChat {
     }
 
     protected static void relayServerStarted() {
-        RelayService.INSTANCE.onStopped();
+        RelayService.INSTANCE.onStarted();
     }
 
     protected static void relayServerStopping() {
