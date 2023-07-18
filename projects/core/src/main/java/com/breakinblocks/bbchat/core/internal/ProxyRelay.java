@@ -3,56 +3,64 @@ package com.breakinblocks.bbchat.core.internal;
 import org.jetbrains.annotations.Nullable;
 
 public class ProxyRelay implements RelayEndpoint {
-    private RelayEndpoint relay = DummyRelay.INSTANCE;
+    private RelayEndpoint endpoint = DummyRelay.INSTANCE;
     private boolean isServerRunning = false;
+    private final Object isServerRunningLock = new Object();
 
-    public void setRelay(RelayEndpoint relay) {
-        this.relay = relay;
-    }
-
-    public boolean isServerRunning() {
-        return isServerRunning;
+    void setEndpoint(RelayEndpoint endpoint) {
+        synchronized (isServerRunningLock) {
+            RelayEndpoint oldEndpoint = this.endpoint;
+            this.endpoint = endpoint;
+            oldEndpoint.cleanup();
+            if (isServerRunning) {
+                endpoint.onStarted();
+            }
+        }
     }
 
     @Override
     public void cleanup() {
-        relay.cleanup();
+        setEndpoint(DummyRelay.INSTANCE);
     }
 
     @Override
     public void onStarted() {
-        relay.onStarted();
-        isServerRunning = true;
+        synchronized (isServerRunningLock) {
+            endpoint.onStarted();
+            isServerRunning = true;
+        }
     }
 
     @Override
     public void onStopped() {
-        isServerRunning = false;
-        relay.onStopped();
+        synchronized (isServerRunningLock) {
+            isServerRunning = false;
+            endpoint.onStopped();
+        }
     }
 
     @Override
     public void onChat(String name, String text) {
-        relay.onChat(name, text);
+        endpoint.onChat(name, text);
     }
 
     @Override
     public void onLogin(String name) {
-        relay.onLogin(name);
+        endpoint.onLogin(name);
     }
 
     @Override
     public void onLogout(String name) {
-        relay.onLogout(name);
+        endpoint.onLogout(name);
     }
 
     @Override
     public void onAchievement(String name, String title, String description) {
-        relay.onAchievement(name, title, description);
+        endpoint.onAchievement(name, title, description);
     }
 
     @Override
     public void onDeath(String message, String target, @Nullable String source) {
-        relay.onDeath(message, target, source);
+        endpoint.onDeath(message, target, source);
     }
 }

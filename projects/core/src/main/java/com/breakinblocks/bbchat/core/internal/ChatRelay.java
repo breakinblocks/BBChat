@@ -156,9 +156,7 @@ public final class ChatRelay implements RelayEndpoint {
                     try {
                         LOGGER.info("Logging in to Discord...");
                         ChatRelay chatRelay = new ChatRelay(botToken, guildIdL, channelIdL, staffRoleIdL, commandPrefix, anyCommands, broadcastMessage, playerCount, minecraft);
-                        if (proxyRelay.isServerRunning())
-                            chatRelay.onStarted();
-                        proxyRelay.setRelay(chatRelay);
+                        proxyRelay.setEndpoint(chatRelay);
                         break;
                     } catch (RuntimeException e) {
                         LOGGER.warn("Failed to connect to Discord.", e);
