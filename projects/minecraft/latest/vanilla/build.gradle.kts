@@ -22,6 +22,6 @@ dependencies {
     api("fuzs.forgeconfigapiport:forgeconfigapiport-common:${forge_config_api_port_version}")
 }
 
-tasks.named<Jar>("jar") {
+tasks.jar {
     archiveClassifier.set("vanilla")
 }
