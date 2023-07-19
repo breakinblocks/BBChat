@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 
 /**
  * Events that the relay fires that the game should handle.
- * To be implemented by the game as a service an supplied to {@link RelayService#setMinecraftService(MinecraftService)}.
+ * To be implemented by the game as a service and supplied to {@link RelayService#setMinecraftService(MinecraftService)}.
  */
 public interface MinecraftService {
     String getBotToken();
