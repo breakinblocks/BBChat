@@ -77,12 +77,25 @@ tasks.jar {
 }
 
 tasks.shadowJar {
-    archiveClassifier.set(project.name)
     dependencies {
         include(project(corePath))
     }
+
+    filesMatching("fabric.mod.json") {
+        filter {
+            it.replace(
+                "\"depends\": {", """
+                "depends": {
+                "com_electronwill_night-config_core": "*",
+                "com_electronwill_night-config_toml": "*",
+            """.trimIndent()
+            )
+        }
+    }
 }
 
-tasks.build {
+tasks.remapJar {
+    archiveClassifier.set(project.name)
     dependsOn(tasks.shadowJar)
+    inputFile.set(tasks.shadowJar.get().archiveFile)
 }
