@@ -32,14 +32,6 @@
       {
         "id": "minecraft",
         "versions": "*"
-      },
-      {
-        "id": "com_electronwill_night-config_core",
-        "versions": "*"
-      },
-      {
-        "id": "com_electronwill_night-config_toml",
-        "versions": "*"
       }
     ]
   },

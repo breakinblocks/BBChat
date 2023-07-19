@@ -9,6 +9,7 @@ val parchment_minecraft_version: String by project
 val parchment_version: String by project
 val quilt_loader_version: String by project
 val qsl_version: String by project
+val quilted_fabric_api_version: String by project
 val forge_config_api_port_version: String by project
 
 plugins {
@@ -29,7 +30,8 @@ dependencies {
         this.parchment("org.parchmentmc.data:parchment-${parchment_minecraft_version}:${parchment_version}@zip")
     })
     modImplementation("org.quiltmc:quilt-loader:${quilt_loader_version}")
-    modImplementation("org.quiltmc:qsl:${qsl_version}+${minecraft_version}")
+    modRuntimeOnly("org.quiltmc.quilted-fabric-api:quilted-fabric-api:${quilted_fabric_api_version}-${minecraft_version}")
+    modCompileOnly("org.quiltmc:qsl:${qsl_version}+${minecraft_version}")
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
@@ -77,12 +79,25 @@ tasks.jar {
 }
 
 tasks.shadowJar {
-    archiveClassifier.set(project.name)
     dependencies {
         include(project(corePath))
     }
+
+    filesMatching("quilt.mod.json") {
+        filter {
+            it.replace(
+                "\"depends\": [", """
+                "depends": [
+                { "id": "com_electronwill_night-config_core", "versions": "*" },
+                { "id": "com_electronwill_night-config_toml", "versions": "*" },
+            """.trimIndent()
+            )
+        }
+    }
 }
 
-tasks.build {
+tasks.remapJar {
+    archiveClassifier.set(project.name)
     dependsOn(tasks.shadowJar)
+    inputFile.set(tasks.shadowJar.get().archiveFile)
 }
