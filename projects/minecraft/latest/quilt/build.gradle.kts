@@ -24,8 +24,8 @@ val vanillaPath = Path.path(parentPath).child("vanilla").path!!
 evaluationDependsOn(vanillaPath)
 
 dependencies {
-    "minecraft"("com.mojang:minecraft:${minecraft_version}")
-    "mappings"(loom.layered {
+    minecraft("com.mojang:minecraft:${minecraft_version}")
+    mappings(loom.layered {
         this.officialMojangMappings { nameSyntheticMembers = false }
         this.parchment("org.parchmentmc.data:parchment-${parchment_minecraft_version}:${parchment_version}@zip")
     })
