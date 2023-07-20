@@ -34,8 +34,8 @@ dependencies {
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
-    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}")
-    include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}")
+    modApi("net.minecraftforge:forgeconfigapiport-fabric:${forge_config_api_port_version}")
+    include("net.minecraftforge:forgeconfigapiport-fabric:${forge_config_api_port_version}")
 }
 
 tasks.withType<JavaCompile> {
