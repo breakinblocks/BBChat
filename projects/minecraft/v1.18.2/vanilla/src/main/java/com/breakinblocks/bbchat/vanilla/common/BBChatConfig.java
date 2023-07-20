@@ -1,4 +1,4 @@
-package com.breakinblocks.bbchat.forge;
+package com.breakinblocks.bbchat.vanilla.common;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.Builder;
@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class BBChatConfig {
+public final class BBChatConfig {
     public static final ForgeConfigSpec commonSpec;
     public static final Common COMMON;
 
@@ -17,6 +17,9 @@ public class BBChatConfig {
         final Pair<Common, ForgeConfigSpec> specPair = new Builder().configure(Common::new);
         commonSpec = specPair.getRight();
         COMMON = specPair.getLeft();
+    }
+
+    private BBChatConfig() {
     }
 
     public static class Common {
@@ -27,7 +30,7 @@ public class BBChatConfig {
         public final ConfigValue<String> commandPrefix;
         public final ConfigValue<List<? extends String>> anyCommands;
 
-        public Common(Builder builder) {
+        Common(Builder builder) {
             botToken = builder
                     .worldRestart()
                     .define("botToken", "<token>");
