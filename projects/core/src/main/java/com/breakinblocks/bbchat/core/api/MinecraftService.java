@@ -7,7 +7,7 @@ import java.util.function.Consumer;
  * Events that the relay fires that the game should handle.
  * To be implemented by the game as a service and supplied to {@link RelayService#setMinecraftService(MinecraftService)}.
  */
-public interface MinecraftService {
+public interface MinecraftService extends MinecraftServiceCommandHandler {
     String getBotToken();
 
     String getGuildId();
@@ -33,15 +33,4 @@ public interface MinecraftService {
      * @param message Message to send
      */
     void onMessage(String message);
-
-    /**
-     * Execute a command on the server.
-     *
-     * @param isStaff     If the user has a staff role
-     * @param name        Identifying name for the user
-     * @param displayName Display name of the user
-     * @param fullCommand Command to execute
-     * @param response    For sending command output
-     */
-    void onCommand(boolean isStaff, String name, String displayName, String fullCommand, Consumer<String> response);
 }
