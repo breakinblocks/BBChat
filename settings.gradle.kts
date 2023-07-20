@@ -108,7 +108,9 @@ include("projects:minecraft:latest:forge")
 include("projects:minecraft:latest:fabric")
 
 include("projects:minecraft:v1.18.2:vanilla")
+include("projects:minecraft:v1.18.2:quilt")
 include("projects:minecraft:v1.18.2:forge")
+include("projects:minecraft:v1.18.2:fabric")
 
 //include("projects:minecraft:v1.17.1:forge")
 
