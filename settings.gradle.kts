@@ -107,10 +107,17 @@ include("projects:minecraft:latest:quilt")
 include("projects:minecraft:latest:forge")
 include("projects:minecraft:latest:fabric")
 
-//include("projects:minecraft:v1.18.2:forge")
+include("projects:minecraft:v1.18.2:vanilla")
+include("projects:minecraft:v1.18.2:forge")
+
 //include("projects:minecraft:v1.17.1:forge")
+
 //include("projects:minecraft:v1.16.5:forge")
+
 //include("projects:minecraft:v1.15.2:forge")
+
 //include("projects:minecraft:v1.14.4:forge")
+
 //include("projects:minecraft:v1.12.2:forge")
+
 //include("projects:minecraft:v1.7.10:forge")
