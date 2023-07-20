@@ -15,7 +15,6 @@ val forge_config_api_port_version: String by project
 plugins {
     id("com.github.johnrengelman.shadow")
     id("org.quiltmc.loom")
-    id("bbchat")
 }
 
 val corePath = ":projects:core"

@@ -2,7 +2,13 @@
 
 val mod_version: String by project
 
+plugins {
+    id("bbchat") apply false
+}
+
 allprojects {
+    apply(plugin = "bbchat")
+
     group = "com.breakinblocks.bbchat"
     version = mod_version
 }
