@@ -5,7 +5,10 @@ import net.minecraft.server.level.ServerPlayer;
 import org.quiltmc.qsl.base.api.event.Event;
 import org.quiltmc.qsl.base.api.event.EventAwareListener;
 
-public class BBChatQuiltEvents {
+public final class BBChatQuiltEvents {
+    private BBChatQuiltEvents() {
+    }
+
     public static final Event<AdvancementGranted> ADVANCEMENT_GRANTED = Event.create(AdvancementGranted.class, callbacks -> (player, advancement) -> {
         for (var callback : callbacks) {
             callback.advancementGranted(player, advancement);
