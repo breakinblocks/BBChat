@@ -22,6 +22,17 @@ val parentPath = Path.path(project.path).parent!!.path!!
 val vanillaPath = Path.path(parentPath).child("vanilla").path!!
 evaluationDependsOn(vanillaPath)
 
+val includeModApi: Configuration by configurations.creating
+
+configurations {
+    configurations.include {
+        extendsFrom(includeModApi)
+    }
+    configurations.modApi {
+        extendsFrom(includeModApi)
+    }
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:${minecraft_version}")
     mappings(loom.layered {
@@ -29,13 +40,19 @@ dependencies {
         this.parchment("org.parchmentmc.data:parchment-${parchment_minecraft_version}:${parchment_version}@zip")
     })
     modImplementation("org.quiltmc:quilt-loader:${quilt_loader_version}")
-    modRuntimeOnly("org.quiltmc.quilted-fabric-api:quilted-fabric-api:${quilted_fabric_api_version}-${minecraft_version}")
-    modCompileOnly("org.quiltmc:qsl:${qsl_version}+${minecraft_version}")
+    modRuntimeOnly("org.quiltmc.quilted-fabric-api:quilted-fabric-api:${quilted_fabric_api_version}-${minecraft_version}") {
+        exclude("org.quiltmc", "quilt-loader")
+    }
+    modCompileOnly("org.quiltmc:qsl:${qsl_version}+${minecraft_version}") {
+        exclude("org.quiltmc", "quilt-loader")
+    }
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
-    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}")
-    include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}")
+    includeModApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}") {
+        exclude("net.fabricmc")
+        exclude("net.fabricmc.fabric-api")
+    }
 }
 
 tasks.withType<JavaCompile> {
