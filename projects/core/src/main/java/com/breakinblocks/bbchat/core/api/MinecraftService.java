@@ -1,7 +1,6 @@
 package com.breakinblocks.bbchat.core.api;
 
 import java.util.Collection;
-import java.util.function.Consumer;
 
 /**
  * Events that the relay fires that the game should handle.
