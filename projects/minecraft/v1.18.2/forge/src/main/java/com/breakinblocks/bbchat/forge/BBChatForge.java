@@ -36,11 +36,11 @@ public class BBChatForge extends BBChat {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (ServerStartedEvent event) -> relayServerStarted());
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, (ServerStoppingEvent event) -> relayServerStopping());
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (ServerStoppedEvent event) -> relayServerStopped());
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (ServerChatEvent event) -> relayChat(event.getPlayer(), event.getMessage()));
-        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> relayLogin(event.getEntity()));
-        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> relayLogout(event.getEntity()));
-        MinecraftForge.EVENT_BUS.addListener((@SuppressWarnings("deprecation") AdvancementEvent.AdvancementEarnEvent event) -> relayAchievement(event.getEntity(), event.getAdvancement()));
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (LivingDeathEvent event) -> relayDeath(event.getEntity(), event.getSource()));
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (ServerChatEvent event) -> relayChat(event.getPlayer(), event.getComponent()));
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> relayLogin(event.getPlayer()));
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> relayLogout(event.getPlayer()));
+        MinecraftForge.EVENT_BUS.addListener((AdvancementEvent event) -> relayAchievement(event.getPlayer(), event.getAdvancement()));
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (LivingDeathEvent event) -> relayDeath(event.getEntityLiving(), event.getSource()));
     }
 
     @Override

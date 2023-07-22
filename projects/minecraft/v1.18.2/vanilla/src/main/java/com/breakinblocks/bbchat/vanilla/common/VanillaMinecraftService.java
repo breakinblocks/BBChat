@@ -3,11 +3,12 @@ package com.breakinblocks.bbchat.vanilla.common;
 import com.breakinblocks.bbchat.core.api.MinecraftService;
 import com.breakinblocks.bbchat.core.api.PlayerCountInfo;
 import com.breakinblocks.bbchat.vanilla.BBChat;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.ParseResults;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec2;
@@ -15,6 +16,7 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -60,7 +62,7 @@ public abstract class VanillaMinecraftService implements MinecraftService {
     public void onMessage(String message) {
         MinecraftServer server = BBChat.INSTANCE.getServer();
         if (server == null) return;
-        server.getPlayerList().broadcastSystemMessage(Component.literal(message), false);
+        server.getPlayerList().broadcastMessage(new TextComponent(message), ChatType.CHAT, Util.NIL_UUID);
     }
 
     @Override
@@ -79,19 +81,17 @@ public abstract class VanillaMinecraftService implements MinecraftService {
                 getConsumerSource(response),
                 Vec3.atLowerCornerOf(serverWorld.getSharedSpawnPos()), Vec2.ZERO, serverWorld, // TODO: Make dynamic
                 opLevel,
-                name, Component.literal(displayName),
+                name, new TextComponent(displayName),
                 server, null
         );
-        CommandDispatcher<CommandSourceStack> commandDispatcher = server.getCommands().getDispatcher();
-        ParseResults<CommandSourceStack> parseResults = commandDispatcher.parse(fullCommand, source);
-        server.getCommands().performCommand(parseResults, fullCommand);
+        server.getCommands().performCommand(source, fullCommand);
     }
 
     @Nonnull
     private static CommandSource getConsumerSource(Consumer<String> consumer) {
         return new CommandSource() {
             @Override
-            public void sendSystemMessage(Component component) {
+            public void sendMessage(Component component, UUID senderUUID) {
                 consumer.accept(component.getString());
             }
 
