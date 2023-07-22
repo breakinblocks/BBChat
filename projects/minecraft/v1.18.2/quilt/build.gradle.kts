@@ -22,6 +22,16 @@ val parentPath = Path.path(project.path).parent!!.path!!
 val vanillaPath = Path.path(parentPath).child("vanilla").path!!
 evaluationDependsOn(vanillaPath)
 
+loom {
+    runs {
+        all {
+            // Needed to load quilted fabric api on minecraft 1.18.2 with quilt loader 1.19+.
+            // Hopefully QFAPI fixes it for 1.18.2 at some point.
+            vmArgs("-Dloader.workaround.disable_strict_parsing=true")
+        }
+    }
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:${minecraft_version}")
     mappings(loom.layered {
@@ -29,13 +39,21 @@ dependencies {
         this.parchment("org.parchmentmc.data:parchment-${parchment_minecraft_version}:${parchment_version}@zip")
     })
     modImplementation("org.quiltmc:quilt-loader:${quilt_loader_version}")
-    modRuntimeOnly("org.quiltmc.quilted-fabric-api:quilted-fabric-api:${quilted_fabric_api_version}-${minecraft_version}")
-    modCompileOnly("org.quiltmc:qsl:${qsl_version}+${minecraft_version}")
+    modRuntimeOnly("org.quiltmc.quilted-fabric-api:quilted-fabric-api:${quilted_fabric_api_version}-${minecraft_version}") {
+        exclude("org.quiltmc", "quilt-loader")
+    }
+    modCompileOnly("org.quiltmc:qsl:${qsl_version}+${minecraft_version}") {
+        exclude("org.quiltmc", "quilt-loader")
+    }
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
     modApi("net.minecraftforge:forgeconfigapiport-fabric:${forge_config_api_port_version}")
     include("net.minecraftforge:forgeconfigapiport-fabric:${forge_config_api_port_version}")
+    api("com.electronwill.night-config:core:3.6.3")
+    include("com.electronwill.night-config:core:3.6.3")
+    api("com.electronwill.night-config:toml:3.6.3")
+    include("com.electronwill.night-config:toml:3.6.3")
 }
 
 tasks.withType<JavaCompile> {
