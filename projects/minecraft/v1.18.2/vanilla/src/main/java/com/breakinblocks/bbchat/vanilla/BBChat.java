@@ -4,7 +4,6 @@ import com.breakinblocks.bbchat.core.api.MinecraftService;
 import com.breakinblocks.bbchat.core.api.RelayService;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -51,10 +50,9 @@ public class BBChat {
         RelayService.INSTANCE.onStopped();
     }
 
-    protected static void relayChat(ServerPlayer player, Component message) {
+    protected static void relayChat(ServerPlayer player, String message) {
         String name = player.getName().getString();
-        String text = message.getString();
-        RelayService.INSTANCE.onChat(name, text);
+        RelayService.INSTANCE.onChat(name, message);
     }
 
     protected static void relayLogin(Player player) {
