@@ -1,5 +1,6 @@
-package com.breakinblocks.bbchat.forge;
+package com.breakinblocks.bbchat.vanilla.common;
 
+import com.breakinblocks.bbchat.vanilla.BBChat;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;

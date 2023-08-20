@@ -1,4 +1,4 @@
-package com.breakinblocks.bbchat.forge;
+package com.breakinblocks.bbchat.vanilla.common;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.Builder;

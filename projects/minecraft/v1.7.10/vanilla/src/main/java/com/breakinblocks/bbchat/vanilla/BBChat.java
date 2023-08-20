@@ -1,9 +1,10 @@
-package com.breakinblocks.bbchat.forge;
+package com.breakinblocks.bbchat.vanilla;
 
 import com.breakinblocks.bbchat.core.internal.RelayEndpoint;
 import com.breakinblocks.bbchat.core.internal.ChatRelay;
 import com.breakinblocks.bbchat.core.internal.DummyRelay;
 import com.breakinblocks.bbchat.core.api.PlayerCountInfo;
+import com.breakinblocks.bbchat.vanilla.common.BBChatConfig;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
