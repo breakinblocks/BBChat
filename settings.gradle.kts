@@ -112,14 +112,14 @@ include("projects:minecraft:v1.18.2:quilt")
 include("projects:minecraft:v1.18.2:forge")
 include("projects:minecraft:v1.18.2:fabric")
 
-//include("projects:minecraft:v1.17.1:forge")
+include("projects:minecraft:v1.17.1:forge")
 
-//include("projects:minecraft:v1.16.5:forge")
+include("projects:minecraft:v1.16.5:forge")
 
-//include("projects:minecraft:v1.15.2:forge")
+include("projects:minecraft:v1.15.2:forge")
 
-//include("projects:minecraft:v1.14.4:forge")
+include("projects:minecraft:v1.14.4:forge")
 
-//include("projects:minecraft:v1.12.2:forge")
+include("projects:minecraft:v1.12.2:forge")
 
-//include("projects:minecraft:v1.7.10:forge")
+include("projects:minecraft:v1.7.10:forge")
