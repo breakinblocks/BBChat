@@ -9,7 +9,6 @@ val parchment_minecraft_version: String by project
 val parchment_version: String by project
 val fabric_loader_version: String by project
 val fabric_api_version: String by project
-val forge_config_api_port_version: String by project
 
 plugins {
     id("com.github.johnrengelman.shadow")
@@ -45,12 +44,6 @@ dependencies {
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
-    includeModApi("net.minecraftforge:forgeconfigapiport-fabric:${forge_config_api_port_version}") {
-        exclude("net.fabricmc")
-        exclude("net.fabricmc.fabric-api")
-    }
-    compileOnly("com.electronwill.night-config:core:3.6.3")
-    compileOnly("com.electronwill.night-config:toml:3.6.3")
 }
 
 tasks.withType<JavaCompile> {
@@ -102,8 +95,6 @@ tasks.shadowJar {
             it.replace(
                 "\"depends\": {", """
                 "depends": {
-                "com_electronwill_night-config_core": "*",
-                "com_electronwill_night-config_toml": "*",
             """.trimIndent()
             )
         }

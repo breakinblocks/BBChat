@@ -3,9 +3,6 @@ package com.breakinblocks.bbchat.quilt;
 import com.breakinblocks.bbchat.quilt.common.BBChatQuiltEvents;
 import com.breakinblocks.bbchat.quilt.common.QuiltMinecraftService;
 import com.breakinblocks.bbchat.vanilla.BBChat;
-import com.breakinblocks.bbchat.vanilla.common.BBChatConfig;
-import net.minecraftforge.api.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
 import org.quiltmc.qsl.lifecycle.api.event.ServerLifecycleEvents;
@@ -18,7 +15,6 @@ public class BBChatQuilt extends BBChat implements ModInitializer {
 
     @Override
     public void onInitialize(ModContainer mod) {
-        ModLoadingContext.registerConfig(BBChat.MOD_ID, ModConfig.Type.COMMON, BBChatConfig.commonSpec);
         ServerLifecycleEvents.STARTING.register(server -> {
             setServer(server);
             relayServerStarting();

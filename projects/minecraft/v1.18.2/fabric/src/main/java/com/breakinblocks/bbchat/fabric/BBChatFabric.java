@@ -3,12 +3,9 @@ package com.breakinblocks.bbchat.fabric;
 import com.breakinblocks.bbchat.fabric.common.BBChatFabricEvents;
 import com.breakinblocks.bbchat.fabric.common.FabricMinecraftService;
 import com.breakinblocks.bbchat.vanilla.BBChat;
-import com.breakinblocks.bbchat.vanilla.common.BBChatConfig;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraftforge.api.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
 
 public class BBChatFabric extends BBChat implements ModInitializer {
     public BBChatFabric() {
@@ -17,7 +14,6 @@ public class BBChatFabric extends BBChat implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        ModLoadingContext.registerConfig(BBChat.MOD_ID, ModConfig.Type.COMMON, BBChatConfig.commonSpec);
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             setServer(server);
             relayServerStarting();

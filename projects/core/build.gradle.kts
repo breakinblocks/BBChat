@@ -1,5 +1,6 @@
 @file:Suppress("PropertyName")
 
+val night_config_version: String by project
 val jda_version: String by project
 
 plugins {
@@ -18,7 +19,8 @@ dependencies {
     implementation("com.google.guava:guava:21.0")
     implementation("org.apache.logging.log4j:log4j-api:2.17.2")
     implementation("org.apache.logging.log4j:log4j-core:2.17.2")
-
+    implementation("com.electronwill.night-config:core:${night_config_version}")
+    implementation("com.electronwill.night-config:toml:${night_config_version}")
     implementation("net.dv8tion:JDA:${jda_version}") {
         exclude(module = "opus-java")
         exclude(module = "jsr305")
@@ -27,6 +29,8 @@ dependencies {
 
 tasks.shadowJar {
     dependencies {
+        include(dependency("com.electronwill.night-config:core"))
+        include(dependency("com.electronwill.night-config:toml"))
         include(dependency("net.dv8tion:JDA"))
 
         include(dependency("com.fasterxml.jackson.core:jackson-databind"))
@@ -46,11 +50,13 @@ tasks.shadowJar {
         include(dependency("org.apache.commons:commons-collections4"))
 
         include(dependency("org.jetbrains:annotations"))
-
-        include(dependency("org.slf4j:slf4j-api"))
     }
 
     val relocatePackage = { p: String -> relocate(p, "com.breakinblocks.bbchat.shadow.$p") }
+
+    // com.electronwill.night-config:core
+    // com.electronwill.night-config:toml
+    relocatePackage("com.electronwill.nightconfig")
 
     // net.dv8tion:JDA
     relocatePackage("net.dv8tion")
@@ -81,9 +87,6 @@ tasks.shadowJar {
     // org.jetbrains:annotations
     relocatePackage("org.intellij.lang.annotations")
     relocatePackage("org.jetbrains.annotations")
-
-    // org.slf4j:slf4j-api
-    relocatePackage("org.slf4j")
 
     exclude { fte ->
         // FileTreeElement returns null for file when it comes from a jar file (dependency).

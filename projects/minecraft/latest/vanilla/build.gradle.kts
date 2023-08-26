@@ -5,7 +5,6 @@ import org.spongepowered.gradle.vanilla.MinecraftExtension
 val minecraft_version: String by project
 val parchment_minecraft_version: String by project
 val parchment_version: String by project
-val forge_config_api_port_version: String by project
 
 plugins {
     `java-library`
@@ -19,7 +18,6 @@ configure<MinecraftExtension> {
 dependencies {
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = ":projects:core", configuration = "shadow"))
-    api("fuzs.forgeconfigapiport:forgeconfigapiport-common:${forge_config_api_port_version}")
 }
 
 tasks.jar {

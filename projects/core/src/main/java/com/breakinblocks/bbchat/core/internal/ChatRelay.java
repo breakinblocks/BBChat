@@ -18,16 +18,16 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.events.session.SessionRecreateEvent;
 import net.dv8tion.jda.api.events.session.SessionResumeEvent;
+import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.hooks.AnnotatedEventManager;
 import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import javax.security.auth.login.LoginException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -56,7 +56,7 @@ import static com.breakinblocks.bbchat.core.internal.TextUtils.Formatting.ITALIC
 import static com.breakinblocks.bbchat.core.internal.TextUtils.Formatting.RESET;
 
 public final class ChatRelay implements RelayEndpoint {
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatRelay.class);
     private static final String FORMAT_CHAT = BOLD + "[%s]" + RESET + " %s";
     private static final String FORMAT_LOGIN = BOLD + "%s" + RESET + " joined the server";
     private static final String FORMAT_LOGOUT = BOLD + "%s" + RESET + " left the server";
@@ -91,7 +91,7 @@ public final class ChatRelay implements RelayEndpoint {
             Consumer<String> broadcastMessage,
             Supplier<PlayerCountInfo> playerCount,
             MinecraftServiceCommandHandler commandHandler
-    ) throws LoginException {
+    ) throws InvalidTokenException, IllegalArgumentException {
         jda = JDABuilder
                 .create(
                         botToken,
@@ -158,6 +158,9 @@ public final class ChatRelay implements RelayEndpoint {
                         ChatRelay chatRelay = new ChatRelay(botToken, guildIdL, channelIdL, staffRoleIdL, commandPrefix, anyCommands, broadcastMessage, playerCount, commandHandler);
                         proxyRelay.setEndpoint(chatRelay);
                         break;
+                    } catch (InvalidTokenException | IllegalArgumentException e) {
+                        //noinspection ThrowCaughtLocally
+                        throw e;
                     } catch (RuntimeException e) {
                         LOGGER.warn("Failed to connect to Discord.", e);
                     }
@@ -168,7 +171,7 @@ public final class ChatRelay implements RelayEndpoint {
                 LOGGER.info("Connected to Discord!");
             } catch (InterruptedException e) {
                 LOGGER.warn("Interrupted before connecting to Discord.", e);
-            } catch (LoginException e) {
+            } catch (InvalidTokenException | IllegalArgumentException e) {
                 LOGGER.warn("Failed to login ;-;. Check your bot token.", e);
             }
         });

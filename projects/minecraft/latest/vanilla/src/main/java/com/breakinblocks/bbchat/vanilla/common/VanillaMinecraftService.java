@@ -14,41 +14,9 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public abstract class VanillaMinecraftService implements MinecraftService {
-    @Override
-    public String getBotToken() {
-        return BBChatConfig.COMMON.botToken.get();
-    }
-
-    @Override
-    public String getGuildId() {
-        return BBChatConfig.COMMON.guildId.get();
-    }
-
-    @Override
-    public String getChannelId() {
-        return BBChatConfig.COMMON.channelId.get();
-    }
-
-    @Override
-    public String getStaffRoleId() {
-        return BBChatConfig.COMMON.staffRoleId.get();
-    }
-
-    @Override
-    public String getCommandPrefix() {
-        return BBChatConfig.COMMON.commandPrefix.get();
-    }
-
-    @Override
-    public Collection<String> getAnyCommands() {
-        return BBChatConfig.COMMON.anyCommands.get().stream().map(String::toString).collect(Collectors.toList());
-    }
-
     @Override
     public PlayerCountInfo getPlayerCountInfo() {
         MinecraftServer server = BBChat.INSTANCE.getServer();

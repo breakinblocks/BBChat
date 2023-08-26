@@ -59,12 +59,6 @@ dependencies {
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
-    includeModApi("net.minecraftforge:forgeconfigapiport-fabric:${forge_config_api_port_version}") {
-        exclude("net.fabricmc")
-        exclude("net.fabricmc.fabric-api")
-    }
-    compileOnly("com.electronwill.night-config:core:3.6.3")
-    compileOnly("com.electronwill.night-config:toml:3.6.3")
 }
 
 tasks.withType<JavaCompile> {
@@ -116,8 +110,6 @@ tasks.shadowJar {
             it.replace(
                 "\"depends\": [", """
                 "depends": [
-                { "id": "com_electronwill_night-config_core", "versions": "*" },
-                { "id": "com_electronwill_night-config_toml", "versions": "*" },
             """.trimIndent()
             )
         }

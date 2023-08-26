@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class RelayServiceImpl implements RelayService {
     private RelayEndpoint endpoint = DummyRelay.INSTANCE;
+    private BBChatConfig config;
     private MinecraftService minecraft;
 
     @Override
@@ -15,13 +16,17 @@ public class RelayServiceImpl implements RelayService {
 
     @Override
     public void onStarting() {
+        if (config == null) {
+            config = new BBChatConfig();
+        }
+
         endpoint = ChatRelay.create(
-                minecraft.getBotToken(),
-                minecraft.getGuildId(),
-                minecraft.getChannelId(),
-                minecraft.getStaffRoleId(),
-                minecraft.getCommandPrefix(),
-                minecraft.getAnyCommands(),
+                config.botToken,
+                config.guildId,
+                config.channelId,
+                config.staffRoleId,
+                config.commandPrefix,
+                config.anyCommands,
                 minecraft::onMessage,
                 minecraft::getPlayerCountInfo,
                 minecraft

@@ -10,7 +10,6 @@ val parchment_version: String by project
 val quilt_loader_version: String by project
 val qsl_version: String by project
 val quilted_fabric_api_version: String by project
-val forge_config_api_port_version: String by project
 
 plugins {
     id("com.github.johnrengelman.shadow")
@@ -49,10 +48,6 @@ dependencies {
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
-    includeModApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}") {
-        exclude("net.fabricmc")
-        exclude("net.fabricmc.fabric-api")
-    }
 }
 
 tasks.withType<JavaCompile> {
@@ -104,8 +99,6 @@ tasks.shadowJar {
             it.replace(
                 "\"depends\": [", """
                 "depends": [
-                { "id": "com_electronwill_night-config_core", "versions": "*" },
-                { "id": "com_electronwill_night-config_toml", "versions": "*" },
             """.trimIndent()
             )
         }
