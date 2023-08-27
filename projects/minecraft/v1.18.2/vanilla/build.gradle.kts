@@ -5,7 +5,6 @@ import org.spongepowered.gradle.vanilla.MinecraftExtension
 val minecraft_version: String by project
 val parchment_minecraft_version: String by project
 val parchment_version: String by project
-val forge_config_api_port_version: String by project
 
 plugins {
     `java-library`

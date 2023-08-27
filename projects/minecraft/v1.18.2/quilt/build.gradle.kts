@@ -10,7 +10,6 @@ val parchment_version: String by project
 val quilt_loader_version: String by project
 val qsl_version: String by project
 val quilted_fabric_api_version: String by project
-val forge_config_api_port_version: String by project
 
 plugins {
     id("com.github.johnrengelman.shadow")
