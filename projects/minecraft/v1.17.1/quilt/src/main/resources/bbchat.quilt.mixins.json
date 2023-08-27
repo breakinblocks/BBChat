@@ -4,7 +4,10 @@
   "package": "com.breakinblocks.bbchat.quilt.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "BootstrapMixin",
+    "MinecraftServerMixin",
     "PlayerAdvancementsMixin",
+    "PlayerListMixin",
     "ServerGamePacketListenerImplMixin"
   ],
   "verbose": true,

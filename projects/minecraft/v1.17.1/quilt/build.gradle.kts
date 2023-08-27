@@ -8,8 +8,6 @@ val minecraft_version: String by project
 val parchment_minecraft_version: String by project
 val parchment_version: String by project
 val quilt_loader_version: String by project
-val qsl_version: String by project
-val quilted_fabric_api_version: String by project
 
 plugins {
     id("com.github.johnrengelman.shadow")
@@ -38,12 +36,6 @@ dependencies {
         this.parchment("org.parchmentmc.data:parchment-${parchment_minecraft_version}:${parchment_version}@zip")
     })
     modImplementation("org.quiltmc:quilt-loader:${quilt_loader_version}")
-    modRuntimeOnly("org.quiltmc.quilted-fabric-api:quilted-fabric-api:${quilted_fabric_api_version}-${minecraft_version}") {
-        exclude("org.quiltmc", "quilt-loader")
-    }
-    modCompileOnly("org.quiltmc:qsl:${qsl_version}+${minecraft_version}") {
-        exclude("org.quiltmc", "quilt-loader")
-    }
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))

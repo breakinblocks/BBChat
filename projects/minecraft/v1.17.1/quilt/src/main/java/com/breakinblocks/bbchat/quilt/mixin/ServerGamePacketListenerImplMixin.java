@@ -18,6 +18,6 @@ public class ServerGamePacketListenerImplMixin {
     @Inject(method = "handleChat(Lnet/minecraft/server/network/TextFilter$FilteredText;)V",
             at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/server/players/PlayerList;broadcastMessage(Lnet/minecraft/network/chat/Component;Ljava/util/function/Function;Lnet/minecraft/network/chat/ChatType;Ljava/util/UUID;)V"))
     private void handleChat$bbchat$chatMessageSent(TextFilter.FilteredText message, CallbackInfo ci) {
-        BBChatQuiltEvents.CHAT_MESSAGE_SENT.invoker().chatMessageSent(player, message.getRaw());
+        BBChatQuiltEvents.CHAT_MESSAGE_SENT.chatMessageSent(player, message.getRaw());
     }
 }

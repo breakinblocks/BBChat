@@ -20,8 +20,8 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Inject(method = "die(Lnet/minecraft/world/damagesource/DamageSource;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/CombatTracker;recheckStatus()V"))
     private void die$bbchat$onDeath(DamageSource source, CallbackInfo ci) {
-        if (getLevel().isClientSide) return;
+        if (level.isClientSide) return;
         //noinspection DataFlowIssue
-        BBChatQuiltEvents.LIVING_ENTITY_DEATH.invoker().livingEntityDeath((LivingEntity) (Object) this, source);
+        BBChatQuiltEvents.LIVING_ENTITY_DEATH.livingEntityDeath((LivingEntity) (Object) this, source);
     }
 }

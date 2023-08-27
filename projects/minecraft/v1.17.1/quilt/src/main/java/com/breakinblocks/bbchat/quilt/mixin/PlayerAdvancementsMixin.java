@@ -18,6 +18,6 @@ public class PlayerAdvancementsMixin {
     @Inject(method = "award(Lnet/minecraft/advancements/Advancement;Ljava/lang/String;)Z",
             at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/advancements/AdvancementRewards;grant(Lnet/minecraft/server/level/ServerPlayer;)V"))
     private void award$bbchat$advancementGranted(Advancement advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir) {
-        BBChatQuiltEvents.ADVANCEMENT_GRANTED.invoker().advancementGranted(player, advancement);
+        BBChatQuiltEvents.ADVANCEMENT_GRANTED.advancementGranted(player, advancement);
     }
 }
