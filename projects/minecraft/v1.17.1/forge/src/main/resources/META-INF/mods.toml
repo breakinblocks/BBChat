@@ -22,6 +22,6 @@ side = "BOTH"
 [[dependencies.bbchat]]
 modId = "minecraft"
 mandatory = true
-versionRange = "${mc_version_range_supported}"
+versionRange = "${minecraft_version_range_supported}"
 ordering = "AFTER"
 side = "BOTH"

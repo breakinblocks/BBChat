@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "bbchat",
+  "version": "${mod_version}",
+  "name": "BBChat",
+  "description": "Chat relay for Minecraft and Discord",
+  "authors": [
+    "BBChat contributors"
+  ],
+  "contact": {
+    "homepage": "https://github.com/breakinblocks/BBChat",
+    "sources": "https://github.com/breakinblocks/BBChat"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.breakinblocks.bbchat.fabric.BBChatFabric"
+    ]
+  },
+  "mixins": [
+    "bbchat.fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": "*",
+    "minecraft": "*",
+    "fabric-api": "*"
+  }
+}
