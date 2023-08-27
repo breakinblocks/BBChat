@@ -31,17 +31,6 @@ loom {
     }
 }
 
-val includeModApi: Configuration by configurations.creating
-
-configurations {
-    configurations.include {
-        extendsFrom(includeModApi)
-    }
-    configurations.modApi {
-        extendsFrom(includeModApi)
-    }
-}
-
 dependencies {
     minecraft("com.mojang:minecraft:${minecraft_version}")
     mappings(loom.layered {

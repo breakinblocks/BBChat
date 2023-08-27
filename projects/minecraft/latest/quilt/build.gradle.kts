@@ -21,17 +21,6 @@ val parentPath = Path.path(project.path).parent!!.path!!
 val vanillaPath = Path.path(parentPath).child("vanilla").path!!
 evaluationDependsOn(vanillaPath)
 
-val includeModApi: Configuration by configurations.creating
-
-configurations {
-    configurations.include {
-        extendsFrom(includeModApi)
-    }
-    configurations.modApi {
-        extendsFrom(includeModApi)
-    }
-}
-
 dependencies {
     minecraft("com.mojang:minecraft:${minecraft_version}")
     mappings(loom.layered {
