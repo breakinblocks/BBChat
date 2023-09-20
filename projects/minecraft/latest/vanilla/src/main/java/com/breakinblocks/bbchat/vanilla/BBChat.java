@@ -71,7 +71,7 @@ public class BBChat {
         DisplayInfo displayInfo = advancement.getDisplay();
         if (displayInfo == null) return;
         if (!displayInfo.shouldAnnounceChat()) return;
-        if (!player.level.getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) return;
+        if (!player.level().getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) return;
         String name = player.getName().getString();
         String title = displayInfo.getTitle().getString();
         String description = displayInfo.getDescription().getString();
@@ -83,7 +83,7 @@ public class BBChat {
      */
     protected void relayDeath(LivingEntity livingEntity, DamageSource damageSource) {
         if (isRealPlayer(livingEntity) || (livingEntity.hasCustomName() && isRealPlayer(damageSource.getEntity()))) {
-            if (!livingEntity.level.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) return;
+            if (!livingEntity.level().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) return;
             String deathMessage = livingEntity.getCombatTracker().getDeathMessage().getString();
             String target = livingEntity.getName().getString();
             Entity sourceEntity = damageSource.getEntity();
