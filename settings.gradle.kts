@@ -10,6 +10,10 @@ pluginManagement {
                     useModule("com.github.johnrengelman:shadow:8.1.1")
                 }
 
+                "org.gradle.toolchains.foojay-resolver-convention" -> {
+                    useModule("org.gradle.toolchains:foojay-resolver:0.5.0")
+                }
+
                 "net.kyori.blossom" -> {
                     useModule("net.kyori:blossom:1.3.1")
                 }
@@ -20,6 +24,11 @@ pluginManagement {
 
                 "org.quiltmc.loom" -> {
                     useModule("org.quiltmc:loom:1.2.3")
+                }
+
+                "net.neoforged.gradle" -> {
+                    // https://maven.neoforged.net/#/releases/net/neoforged/NeoGradle
+                    useModule("net.neoforged:NeoGradle:6.0.18")
                 }
 
                 "net.minecraftforge.gradle" -> {
@@ -60,6 +69,15 @@ pluginManagement {
             }
         }
         maven {
+            name = "NeoForged"
+            url = uri("https://maven.neoforged.net/releases")
+            content {
+                includeGroup("de.oceanlabs.mcp")
+                includeGroup("net.minecraft")
+                includeGroupByRegex("""^net\.neoforged(?:\..+$|$)""")
+            }
+        }
+        maven {
             name = "MinecraftForge"
             url = uri("https://maven.minecraftforge.net")
             content {
@@ -92,10 +110,15 @@ pluginManagement {
                 includeGroup("io.github.juuxel")
                 includeGroup("gradle.plugin.org.jetbrains.gradle.plugin.idea-ext")
                 includeGroup("net.kyori")
+                includeGroup("org.gradle.toolchains")
             }
         }
         mavenCentral()
     }
+}
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention")
 }
 
 rootProject.name = "bbchat"
@@ -104,6 +127,7 @@ include("projects:core")
 
 include("projects:minecraft:latest:vanilla")
 include("projects:minecraft:latest:quilt")
+include("projects:minecraft:latest:neo")
 include("projects:minecraft:latest:forge")
 include("projects:minecraft:latest:fabric")
 

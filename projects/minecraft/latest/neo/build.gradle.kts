@@ -4,18 +4,19 @@ import net.minecraftforge.gradle.userdev.UserDevExtension
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.gradle.util.Path
 
+val mod_id: String by project
 val mod_version: String by project
 val minecraft_version: String by project
 val minecraft_version_range_supported: String by project
-val forge_version: String by project
-val forge_version_range_supported: String by project
+val neo_version: String by project
+val neo_version_range_supported: String by project
 val parchment_minecraft_version: String by project
 val parchment_version: String by project
 
 plugins {
     id("com.github.ben-manes.versions")
     id("com.github.johnrengelman.shadow")
-    id("net.minecraftforge.gradle")
+    id("net.neoforged.gradle")
     id("org.parchmentmc.librarian.forgegradle")
 }
 
@@ -26,8 +27,9 @@ evaluationDependsOn(vanillaPath)
 
 configure<UserDevExtension> {
     mappings("parchment", "${parchment_version}-${parchment_minecraft_version}")
+    copyIdeResources.set(true)
     runs {
-        create("client") {
+        configureEach {
             workingDirectory(file("run"))
             property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
             property("forge.logging.console.level", "debug")
@@ -39,40 +41,24 @@ configure<UserDevExtension> {
                     )
                 }
             }
+        }
+        create("client") {
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
         create("server") {
-            workingDirectory(file("run"))
-            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
-            property("forge.logging.console.level", "debug")
-
-            mods {
-                create("bbchat") {
-                    sources = listOf(
-                        sourceSets["main"],
-                        project(vanillaPath).sourceSets["main"],
-                    )
-                }
-            }
+            property("forge.enabledGameTestNamespaces", mod_id)
+        }
+        create("gameTestServer") {
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
         create("data") {
-            workingDirectory(file("run"))
-            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
-            property("forge.logging.console.level", "debug")
-            setArgs(listOf("--mod", "bbchat", "--all", "--output", file("src/generated/resources/")))
-            mods {
-                create("bbchat") {
-                    sources = listOf(
-                        sourceSets["main"],
-                        project(vanillaPath).sourceSets["main"],
-                    )
-                }
-            }
+            setArgs(listOf("--mod", "bbchat", "--all", "--output", file("src/generated/resources/"), "--existing", file("src/main/resources/")))
         }
     }
 }
 
 dependencies {
-    minecraft("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+    minecraft("net.neoforged:forge:${minecraft_version}-${neo_version}")
     minecraftLibrary(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
 }
@@ -85,14 +71,14 @@ tasks.processResources {
     from(project(vanillaPath).sourceSets.main.get().resources)
     inputs.property("mod_version", mod_version)
     inputs.property("minecraft_version_range_supported", minecraft_version_range_supported)
-    inputs.property("forge_version_range_supported", forge_version_range_supported)
+    inputs.property("neo_version_range_supported", neo_version_range_supported)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from(sourceSets["main"].resources.srcDirs) {
         include("META-INF/mods.toml")
         expand(
             "mod_version" to mod_version,
             "minecraft_version_range_supported" to minecraft_version_range_supported,
-            "forge_version_range_supported" to forge_version_range_supported
+            "neo_version_range_supported" to neo_version_range_supported
         )
     }
     from(sourceSets["main"].resources.srcDirs) {
@@ -111,6 +97,8 @@ tasks.jar {
             "Implementation-Vendor" to "Breakin' Blocks"
         )
     }
+
+    finalizedBy(tasks.reobfJarJar)
 }
 
 tasks.shadowJar {
