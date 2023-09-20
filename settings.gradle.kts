@@ -107,6 +107,11 @@ include("projects:minecraft:latest:quilt")
 include("projects:minecraft:latest:forge")
 include("projects:minecraft:latest:fabric")
 
+include("projects:minecraft:v1.19.4:vanilla")
+include("projects:minecraft:v1.19.4:quilt")
+include("projects:minecraft:v1.19.4:forge")
+include("projects:minecraft:v1.19.4:fabric")
+
 include("projects:minecraft:v1.18.2:vanilla")
 include("projects:minecraft:v1.18.2:quilt")
 include("projects:minecraft:v1.18.2:forge")
