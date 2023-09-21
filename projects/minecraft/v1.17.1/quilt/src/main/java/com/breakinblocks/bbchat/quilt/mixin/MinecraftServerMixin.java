@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@SuppressWarnings("MethodMayBeStatic")
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin {
     @Inject(method = "runServer()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;initServer()Z"))
@@ -16,17 +17,17 @@ public abstract class MinecraftServerMixin {
     }
 
     @Inject(method = "runServer()V", at = @At(shift = At.Shift.AFTER, value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;updateStatusIcon(Lnet/minecraft/network/protocol/status/ServerStatus;)V"))
-    private static void runServer$bbchat$serverStarted(CallbackInfo ci) {
+    private void runServer$bbchat$serverStarted(CallbackInfo ci) {
         BBChatQuiltEvents.SERVER_STARTED.serverStarted();
     }
 
     @Inject(method = "halt(Z)V", at = @At("HEAD"))
-    private static void halt$bbchat$serverStopping(boolean waitForServer, CallbackInfo ci) {
+    private void halt$bbchat$serverStopping(boolean waitForServer, CallbackInfo ci) {
         BBChatQuiltEvents.SERVER_STOPPING.serverStopping();
     }
 
     @Inject(method = "halt(Z)V", at = @At("TAIL"))
-    private static void halt$bbchat$serverStopped(boolean waitForServer, CallbackInfo ci) {
+    private void halt$bbchat$serverStopped(boolean waitForServer, CallbackInfo ci) {
         BBChatQuiltEvents.SERVER_STOPPED.serverStopped();
     }
 }

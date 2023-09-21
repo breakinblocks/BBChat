@@ -9,15 +9,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@SuppressWarnings("MethodMayBeStatic")
 @Mixin(PlayerList.class)
 public class PlayerListMixin {
     @Inject(method = "placeNewPlayer(Lnet/minecraft/network/Connection;Lnet/minecraft/server/level/ServerPlayer;)V", at = @At("TAIL"))
-    private static void placeNewPlayer$bbchat$playerLogin(Connection netManager, ServerPlayer player, CallbackInfo ci) {
+    private void placeNewPlayer$bbchat$playerLogin(Connection netManager, ServerPlayer player, CallbackInfo ci) {
         BBChatQuiltEvents.PLAYER_LOGIN.playerLogin(player);
     }
 
     @Inject(method = "remove(Lnet/minecraft/server/level/ServerPlayer;)V", at = @At("HEAD"))
-    private static void remove$bbchat$playerLogout(ServerPlayer player, CallbackInfo ci) {
+    private void remove$bbchat$playerLogout(ServerPlayer player, CallbackInfo ci) {
         BBChatQuiltEvents.PLAYER_LOGOUT.playerLogout(player);
     }
 }
