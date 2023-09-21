@@ -3,7 +3,7 @@ pluginManagement {
         eachPlugin {
             when (requested.id.toString()) {
                 "com.github.ben-manes.versions" -> {
-                    useModule("com.github.ben-manes:gradle-versions-plugin:0.46.0")
+                    useModule("com.github.ben-manes:gradle-versions-plugin:0.48.0")
                 }
 
                 "com.github.johnrengelman.shadow" -> {

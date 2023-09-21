@@ -14,7 +14,7 @@ base.archivesName.set("bbchat-core")
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
 
 dependencies {
-    implementation("org.jetbrains:annotations:23.0.0")
+    implementation("org.jetbrains:annotations:24.0.1")
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation("com.google.guava:guava:21.0")
     implementation("org.apache.logging.log4j:log4j-api:2.17.2")
