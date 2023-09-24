@@ -36,7 +36,7 @@ public class BBChatNeo extends BBChat {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (ServerChatEvent event) -> relayChat(event.getPlayer(), event.getMessage()));
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> relayLogin(event.getEntity()));
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> relayLogout(event.getEntity()));
-        MinecraftForge.EVENT_BUS.addListener((@SuppressWarnings("deprecation") AdvancementEvent.AdvancementEarnEvent event) -> relayAchievement(event.getEntity(), event.getAdvancement()));
+        MinecraftForge.EVENT_BUS.addListener((AdvancementEvent.AdvancementEarnEvent event) -> relayAchievement(event.getEntity(), event.getAdvancement()));
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (LivingDeathEvent event) -> relayDeath(event.getEntity(), event.getSource()));
     }
 
