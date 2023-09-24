@@ -1,6 +1,6 @@
-package com.breakinblocks.bbchat.forge;
+package com.breakinblocks.bbchat.neo;
 
-import com.breakinblocks.bbchat.forge.common.ForgeMinecraftService;
+import com.breakinblocks.bbchat.neo.common.NeoMinecraftService;
 import com.breakinblocks.bbchat.vanilla.BBChat;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,9 +23,9 @@ import net.minecraftforge.network.NetworkConstants;
 import javax.annotation.Nullable;
 
 @Mod(BBChat.MOD_ID)
-public class BBChatForge extends BBChat {
-    public BBChatForge() {
-        super(new ForgeMinecraftService());
+public class BBChatNeo extends BBChat {
+    public BBChatNeo() {
+        super(new NeoMinecraftService());
         // Ignore this mod being installed on either side
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, (ServerAboutToStartEvent event) -> setServer(event.getServer()));

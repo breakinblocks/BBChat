@@ -1,7 +1,7 @@
-package com.breakinblocks.bbchat.forge.common;
+package com.breakinblocks.bbchat.neo.common;
 
 
 import com.breakinblocks.bbchat.vanilla.common.VanillaMinecraftService;
 
-public class ForgeMinecraftService extends VanillaMinecraftService {
+public class NeoMinecraftService extends VanillaMinecraftService {
 }
