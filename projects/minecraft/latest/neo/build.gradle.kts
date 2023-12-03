@@ -52,7 +52,14 @@ configure<UserDevExtension> {
             property("forge.enabledGameTestNamespaces", mod_id)
         }
         create("data") {
-            setArgs(listOf("--mod", "bbchat", "--all", "--output", file("src/generated/resources/"), "--existing", file("src/main/resources/")))
+            setArgs(
+                listOf(
+                    "--mod", "bbchat",
+                    "--all",
+                    "--output", file("src/generated/resources/"),
+                    "--existing", file("src/main/resources/"),
+                )
+            )
         }
     }
 }
@@ -97,8 +104,6 @@ tasks.jar {
             "Implementation-Vendor" to "Breakin' Blocks"
         )
     }
-
-    finalizedBy(tasks.reobfJarJar)
 }
 
 tasks.shadowJar {

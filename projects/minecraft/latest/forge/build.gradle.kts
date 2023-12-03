@@ -4,6 +4,7 @@ import net.minecraftforge.gradle.userdev.UserDevExtension
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.gradle.util.Path
 
+val mod_id: String by project
 val mod_version: String by project
 val minecraft_version: String by project
 val minecraft_version_range_supported: String by project
@@ -26,8 +27,9 @@ evaluationDependsOn(vanillaPath)
 
 configure<UserDevExtension> {
     mappings("parchment", "${parchment_version}-${parchment_minecraft_version}")
+    copyIdeResources.set(true)
     runs {
-        create("client") {
+        configureEach {
             workingDirectory(file("run"))
             property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
             property("forge.logging.console.level", "debug")
@@ -40,33 +42,25 @@ configure<UserDevExtension> {
                 }
             }
         }
+        create("client") {
+            property("forge.enabledGameTestNamespaces", mod_id)
+        }
         create("server") {
-            workingDirectory(file("run"))
-            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
-            property("forge.logging.console.level", "debug")
-
-            mods {
-                create("bbchat") {
-                    sources = listOf(
-                        sourceSets["main"],
-                        project(vanillaPath).sourceSets["main"],
-                    )
-                }
-            }
+            property("forge.enabledGameTestNamespaces", mod_id)
+        }
+        create("gameTestServer") {
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
         create("data") {
             workingDirectory(file("run"))
-            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
-            property("forge.logging.console.level", "debug")
-            setArgs(listOf("--mod", "bbchat", "--all", "--output", file("src/generated/resources/")))
-            mods {
-                create("bbchat") {
-                    sources = listOf(
-                        sourceSets["main"],
-                        project(vanillaPath).sourceSets["main"],
-                    )
-                }
-            }
+            setArgs(
+                listOf(
+                    "--mod", "bbchat",
+                    "--all",
+                    "--output", file("src/generated/resources/"),
+                    "--existing", file("src/main/resources/"),
+                )
+            )
         }
     }
 }
