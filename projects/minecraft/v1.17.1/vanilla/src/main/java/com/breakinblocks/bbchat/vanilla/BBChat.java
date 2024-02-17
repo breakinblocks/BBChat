@@ -80,14 +80,15 @@ public class BBChat {
      * @see ServerPlayer#die(DamageSource)
      */
     protected void relayDeath(LivingEntity livingEntity, DamageSource damageSource) {
-        if (isRealPlayer(livingEntity) || (livingEntity.hasCustomName() && isRealPlayer(damageSource.getEntity()))) {
-            if (!livingEntity.level.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) return;
-            String deathMessage = livingEntity.getCombatTracker().getDeathMessage().getString();
-            String target = livingEntity.getName().getString();
-            Entity sourceEntity = damageSource.getEntity();
-            String source = sourceEntity != null ? sourceEntity.getName().getString() : null;
-            RelayService.INSTANCE.onDeath(deathMessage, target, source);
-        }
+        if (!isRealPlayer(livingEntity))
+            return;
+        if (!livingEntity.level.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES))
+            return;
+        String deathMessage = livingEntity.getCombatTracker().getDeathMessage().getString();
+        String target = livingEntity.getName().getString();
+        Entity sourceEntity = damageSource.getEntity();
+        String source = sourceEntity != null ? sourceEntity.getName().getString() : null;
+        RelayService.INSTANCE.onDeath(deathMessage, target, source);
     }
 
     protected boolean isRealPlayer(@Nullable Entity entity) {

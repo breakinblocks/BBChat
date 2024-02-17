@@ -132,15 +132,16 @@ public class BBChat {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void relayDeath(LivingDeathEvent event) {
         final LivingEntity living = event.getEntityLiving();
-        if (isRealPlayer(living) || (living.hasCustomName() && isRealPlayer(event.getSource().getEntity()))) {
-            final World world = living.getCommandSenderWorld();
-            if (!world.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) return;
-            String deathMessage = living.getCombatTracker().getDeathMessage().getString();
-            String target = living.getName().getString();
-            Entity sourceEntity = event.getSource().getEntity();
-            String source = sourceEntity != null ? sourceEntity.getName().getString() : null;
-            relay.onDeath(deathMessage, target, source);
-        }
+        if (!isRealPlayer(living))
+            return;
+        final World world = living.getCommandSenderWorld();
+        if (!world.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES))
+            return;
+        String deathMessage = living.getCombatTracker().getDeathMessage().getString();
+        String target = living.getName().getString();
+        Entity sourceEntity = event.getSource().getEntity();
+        String source = sourceEntity != null ? sourceEntity.getName().getString() : null;
+        relay.onDeath(deathMessage, target, source);
     }
 
     public boolean isRealPlayer(@Nullable Entity entity) {
