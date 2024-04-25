@@ -28,7 +28,7 @@ pluginManagement {
 
                 "net.neoforged.gradle" -> {
                     // https://maven.neoforged.net/#/releases/net/neoforged/NeoGradle
-                    useModule("net.neoforged:NeoGradle:6.0.18")
+                    useModule("net.neoforged:NeoGradle:6.0.21")
                 }
 
                 "net.minecraftforge.gradle" -> {
@@ -126,10 +126,16 @@ rootProject.name = "bbchat"
 include("projects:core")
 
 include("projects:minecraft:latest:vanilla")
-include("projects:minecraft:latest:quilt")
 include("projects:minecraft:latest:neo")
-include("projects:minecraft:latest:forge")
-include("projects:minecraft:latest:fabric")
+//include("projects:minecraft:latest:quilt")
+//include("projects:minecraft:latest:forge")
+//include("projects:minecraft:latest:fabric")
+/*
+include("projects:minecraft:v1.20.1:vanilla")
+include("projects:minecraft:v1.20.1:quilt")
+include("projects:minecraft:v1.20.1:neo")
+include("projects:minecraft:v1.20.1:forge")
+include("projects:minecraft:v1.20.1:fabric")
 
 include("projects:minecraft:v1.19.4:vanilla")
 include("projects:minecraft:v1.19.4:quilt")
@@ -145,7 +151,7 @@ include("projects:minecraft:v1.17.1:vanilla")
 include("projects:minecraft:v1.17.1:quilt")
 include("projects:minecraft:v1.17.1:forge")
 include("projects:minecraft:v1.17.1:fabric")
-
+*/
 //include("projects:minecraft:v1.16.5:vanilla")
 //include("projects:minecraft:v1.16.5:forge")
 

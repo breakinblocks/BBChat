@@ -1,23 +1,22 @@
-//@file:Suppress("PropertyName")
+@file:Suppress("PropertyName")
 
 import net.minecraftforge.gradle.userdev.UserDevExtension
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.gradle.util.Path
 
-
 val mod_id: String by project
 val mod_version: String by project
 val minecraft_version: String by project
 val minecraft_version_range_supported: String by project
-val neo_version: String by project
-val neo_version_range_supported: String by project
+val forge_version: String by project
+val forge_version_range_supported: String by project
 val parchment_minecraft_version: String by project
 val parchment_version: String by project
 
 plugins {
     id("com.github.ben-manes.versions")
     id("com.github.johnrengelman.shadow")
-    id("net.neoforged.gradle")
+    id("net.minecraftforge.gradle")
     id("org.parchmentmc.librarian.forgegradle")
 }
 
@@ -32,8 +31,8 @@ configure<UserDevExtension> {
     runs {
         configureEach {
             workingDirectory(file("run"))
-            //property("neoforge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
-            //property("neoforge.logging.console.level", "debug")
+            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
+            property("forge.logging.console.level", "debug")
             mods {
                 create("bbchat") {
                     sources = listOf(
@@ -44,15 +43,16 @@ configure<UserDevExtension> {
             }
         }
         create("client") {
-            property("neoforge.enabledGameTestNamespaces", mod_id)
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
         create("server") {
-            property("neoforge.enabledGameTestNamespaces", mod_id)
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
         create("gameTestServer") {
-            property("neoforge.enabledGameTestNamespaces", mod_id)
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
         create("data") {
+            workingDirectory(file("run"))
             setArgs(
                 listOf(
                     "--mod", "bbchat",
@@ -66,7 +66,7 @@ configure<UserDevExtension> {
 }
 
 dependencies {
-    minecraft("net.neoforged:neoforge:${neo_version}")
+    minecraft("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
     minecraftLibrary(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
 }
@@ -79,14 +79,14 @@ tasks.processResources {
     from(project(vanillaPath).sourceSets.main.get().resources)
     inputs.property("mod_version", mod_version)
     inputs.property("minecraft_version_range_supported", minecraft_version_range_supported)
-    inputs.property("neo_version_range_supported", neo_version_range_supported)
+    inputs.property("forge_version_range_supported", forge_version_range_supported)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from(sourceSets["main"].resources.srcDirs) {
         include("META-INF/mods.toml")
         expand(
             "mod_version" to mod_version,
             "minecraft_version_range_supported" to minecraft_version_range_supported,
-            "neo_version_range_supported" to neo_version_range_supported
+            "forge_version_range_supported" to forge_version_range_supported
         )
     }
     from(sourceSets["main"].resources.srcDirs) {

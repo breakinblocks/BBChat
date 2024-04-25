@@ -1,9 +1,8 @@
-//@file:Suppress("PropertyName")
+@file:Suppress("PropertyName")
 
 import net.minecraftforge.gradle.userdev.UserDevExtension
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.gradle.util.Path
-
 
 val mod_id: String by project
 val mod_version: String by project
@@ -32,8 +31,8 @@ configure<UserDevExtension> {
     runs {
         configureEach {
             workingDirectory(file("run"))
-            //property("neoforge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
-            //property("neoforge.logging.console.level", "debug")
+            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
+            property("forge.logging.console.level", "debug")
             mods {
                 create("bbchat") {
                     sources = listOf(
@@ -44,13 +43,13 @@ configure<UserDevExtension> {
             }
         }
         create("client") {
-            property("neoforge.enabledGameTestNamespaces", mod_id)
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
         create("server") {
-            property("neoforge.enabledGameTestNamespaces", mod_id)
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
         create("gameTestServer") {
-            property("neoforge.enabledGameTestNamespaces", mod_id)
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
         create("data") {
             setArgs(
@@ -66,7 +65,7 @@ configure<UserDevExtension> {
 }
 
 dependencies {
-    minecraft("net.neoforged:neoforge:${neo_version}")
+    minecraft("net.neoforged:forge:${minecraft_version}-${neo_version}")
     minecraftLibrary(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
 }
