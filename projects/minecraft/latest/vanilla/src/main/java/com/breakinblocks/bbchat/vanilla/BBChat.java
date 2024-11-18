@@ -2,7 +2,7 @@ package com.breakinblocks.bbchat.vanilla;
 
 import com.breakinblocks.bbchat.core.api.MinecraftService;
 import com.breakinblocks.bbchat.core.api.RelayService;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -67,8 +67,8 @@ public class BBChat {
         RelayService.INSTANCE.onLogout(name);
     }
 
-    protected static void relayAchievement(Player player, Advancement advancement) {
-        DisplayInfo displayInfo = advancement.getDisplay();
+    protected static void relayAchievement(Player player, AdvancementHolder advancement) {
+        DisplayInfo displayInfo = advancement.value().display().orElse(null);
         if (displayInfo == null) return;
         if (!displayInfo.shouldAnnounceChat()) return;
         if (!player.level().getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) return;

@@ -1,7 +1,12 @@
 @file:Suppress("PropertyName", "UnstableApiUsage")
 
+import net.fabricmc.loom.task.GenerateSourcesTask
 import net.fabricmc.loom.task.RemapJarTask
+import net.fabricmc.loom.task.RemapTaskConfiguration
+import net.fabricmc.loom.util.gradle.SyncTaskBuildService
+import org.gradle.internal.extensions.stdlib.uncheckedCast
 import org.gradle.util.Path
+import kotlin.reflect.full.declaredFunctions
 
 val mod_version: String by project
 val minecraft_version: String by project

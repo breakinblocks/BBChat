@@ -12,7 +12,7 @@ val fabric_api_version: String by project
 
 plugins {
     id("com.github.johnrengelman.shadow")
-    id("fabric-loom")
+    id("org.quiltmc.loom")
 }
 
 val corePath = ":projects:core"

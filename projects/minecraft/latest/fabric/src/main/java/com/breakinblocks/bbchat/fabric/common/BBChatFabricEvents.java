@@ -2,7 +2,7 @@ package com.breakinblocks.bbchat.fabric.common;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class BBChatFabricEvents {
@@ -28,6 +28,6 @@ public final class BBChatFabricEvents {
          * @param player      that was granted the {@code advancement}
          * @param advancement that was granted to the {@code player}
          */
-        void advancementGranted(ServerPlayer player, Advancement advancement);
+        void advancementGranted(ServerPlayer player, AdvancementHolder advancement);
     }
 }

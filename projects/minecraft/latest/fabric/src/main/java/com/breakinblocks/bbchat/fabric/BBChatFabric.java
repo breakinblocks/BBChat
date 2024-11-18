@@ -31,7 +31,7 @@ public class BBChatFabric extends BBChat implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> relayServerStopping());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> relayServerStopped());
         ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> {
-            if (params.chatType() != chatTypeChat) {
+            if (params.chatType().value() != chatTypeChat) {
                 return;
             }
 

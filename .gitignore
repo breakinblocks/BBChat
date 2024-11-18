@@ -1,7 +1,7 @@
 logs/
 
 # eclipse
-bin
+bin/
 *.launch
 .settings
 .metadata
@@ -9,19 +9,18 @@ bin
 .project
 
 # idea
-out
+out/
 *.ipr
 *.iws
 *.iml
 .idea
 
 # gradle
-build
-.gradle
+build/
+.gradle/
+.kotlin/
 
 # other
-eclipse
-run
-
-# Files from Forge MDK
-forge*changelog.txt
+eclipse/
+run/
+runs/

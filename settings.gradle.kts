@@ -3,7 +3,7 @@ pluginManagement {
         eachPlugin {
             when (requested.id.toString()) {
                 "com.github.ben-manes.versions" -> {
-                    useModule("com.github.ben-manes:gradle-versions-plugin:0.48.0")
+                    useModule("com.github.ben-manes:gradle-versions-plugin:0.51.0")
                 }
 
                 "com.github.johnrengelman.shadow" -> {
@@ -15,24 +15,27 @@ pluginManagement {
                 }
 
                 "net.kyori.blossom" -> {
-                    useModule("net.kyori:blossom:1.3.1")
+                    useModule("net.kyori:blossom:2.1.0")
                 }
 
                 "org.spongepowered.gradle.vanilla" -> {
-                    useModule("org.spongepowered.gradle.vanilla:org.spongepowered.gradle.vanilla.gradle.plugin:0.2.1-SNAPSHOT")
+                    useModule("org.spongepowered.gradle.vanilla:org.spongepowered.gradle.vanilla.gradle.plugin:0.2.1-20240507.024226-82")
                 }
 
                 "org.quiltmc.loom" -> {
-                    useModule("org.quiltmc:loom:1.2.3")
+                    // https://maven.quiltmc.org/repository/release/org/quiltmc/loom/maven-metadata.xml
+                    useModule("org.quiltmc:loom:1.8.5")
                 }
 
-                "net.neoforged.gradle" -> {
-                    // https://maven.neoforged.net/#/releases/net/neoforged/NeoGradle
-                    useModule("net.neoforged:NeoGradle:6.0.18")
+                "net.neoforged.gradle.userdev" -> {
+                    // https://maven.neoforged.net/#/releases/net/neoforged/gradle/userdev
+                    // https://projects.neoforged.net/neoforged/neogradle
+                    useModule("net.neoforged.gradle:userdev:7.0.145")
                 }
 
                 "net.minecraftforge.gradle" -> {
-                    useModule("net.minecraftforge.gradle:ForgeGradle:6.0.11")
+                    // https://files.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/index.html
+                    useModule("net.minecraftforge.gradle:ForgeGradle:6.0.29")
                 }
 
                 "forge" -> {
@@ -43,9 +46,10 @@ pluginManagement {
                     useModule("org.parchmentmc.librarian.forgegradle:org.parchmentmc.librarian.forgegradle.gradle.plugin:1.2.0")
                 }
 
-                "fabric-loom" -> {
-                    useModule("fabric-loom:fabric-loom.gradle.plugin:1.2.7")
-                }
+//                "fabric-loom" -> {
+//                    // https://maven.fabricmc.net/fabric-loom/fabric-loom.gradle.plugin/maven-metadata.xml
+//                    useModule("fabric-loom:fabric-loom.gradle.plugin:1.8.12")
+//                }
 
                 "io.github.juuxel.loom-quiltflower" -> {
                     useModule("io.github.juuxel:loom-quiltflower:1.8.0")
@@ -72,8 +76,11 @@ pluginManagement {
             name = "NeoForged"
             url = uri("https://maven.neoforged.net/releases")
             content {
+                includeGroup("codechicken")
                 includeGroup("de.oceanlabs.mcp")
+                includeGroup("net.covers1624")
                 includeGroup("net.minecraft")
+                includeGroupByRegex("""^net\.minecraftforge(?:\..+$|$)""")
                 includeGroupByRegex("""^net\.neoforged(?:\..+$|$)""")
             }
         }
@@ -117,6 +124,10 @@ pluginManagement {
     }
 }
 
+buildscript {
+    dependencies.add("classpath", "org.spongepowered:vanillagradle:0.2.1-20240507.024226-82")
+}
+
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention")
 }
@@ -128,23 +139,27 @@ include("projects:core")
 include("projects:minecraft:latest:vanilla")
 include("projects:minecraft:latest:quilt")
 include("projects:minecraft:latest:neo")
-include("projects:minecraft:latest:forge")
 include("projects:minecraft:latest:fabric")
 
-include("projects:minecraft:v1.19.4:vanilla")
-include("projects:minecraft:v1.19.4:quilt")
-include("projects:minecraft:v1.19.4:forge")
-include("projects:minecraft:v1.19.4:fabric")
+//include("projects:minecraft:v1.20.1:vanilla")
+//include("projects:minecraft:v1.20.1:quilt")
+//include("projects:minecraft:v1.20.1:forge")
+//include("projects:minecraft:v1.20.1:fabric")
+//
+//include("projects:minecraft:v1.19.4:vanilla")
+//include("projects:minecraft:v1.19.4:quilt")
+//include("projects:minecraft:v1.19.4:forge")
+//include("projects:minecraft:v1.19.4:fabric")
+//
+//include("projects:minecraft:v1.18.2:vanilla")
+//include("projects:minecraft:v1.18.2:quilt")
+//include("projects:minecraft:v1.18.2:forge")
+//include("projects:minecraft:v1.18.2:fabric")
 
-include("projects:minecraft:v1.18.2:vanilla")
-include("projects:minecraft:v1.18.2:quilt")
-include("projects:minecraft:v1.18.2:forge")
-include("projects:minecraft:v1.18.2:fabric")
-
-include("projects:minecraft:v1.17.1:vanilla")
-include("projects:minecraft:v1.17.1:quilt")
-include("projects:minecraft:v1.17.1:forge")
-include("projects:minecraft:v1.17.1:fabric")
+//include("projects:minecraft:v1.17.1:vanilla")
+//include("projects:minecraft:v1.17.1:quilt")
+//include("projects:minecraft:v1.17.1:forge")
+//include("projects:minecraft:v1.17.1:fabric")
 
 //include("projects:minecraft:v1.16.5:vanilla")
 //include("projects:minecraft:v1.16.5:forge")

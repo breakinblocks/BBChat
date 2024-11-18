@@ -1,6 +1,7 @@
 @file:Suppress("PropertyName")
 
 val mod_version: String by project
+val mod_group_id: String by project
 
 plugins {
     id("bbchat") apply false
@@ -9,7 +10,7 @@ plugins {
 allprojects {
     apply(plugin = "bbchat")
 
-    group = "com.breakinblocks.bbchat"
+    group = mod_group_id
     version = mod_version
 }
 
@@ -39,25 +40,18 @@ subprojects {
         }
         mavenCentral {
             content {
-                includeGroup("com.electronwill.night-config")
-                includeGroup("com.fasterxml")
-                includeGroup("com.fasterxml.jackson")
-                includeGroup("com.fasterxml.jackson.core")
-                includeGroup("com.google.code.findbugs")
-                includeGroup("com.google.guava")
-                includeGroup("com.neovisionaries")
-                includeGroup("com.squareup.okhttp3")
-                includeGroup("com.squareup.okio")
-                includeGroup("net.dv8tion")
-                includeGroup("net.sf.trove4j")
-                includeGroup("org.apache")
-                includeGroup("org.apache.commons")
-                includeGroup("org.apache.logging")
-                includeGroup("org.apache.logging.log4j")
-                includeGroup("org.jetbrains")
-                includeGroup("org.jetbrains.kotlin")
-                includeGroup("org.slf4j")
-                includeGroup("org.sonatype.oss")
+                includeGroupByRegex("""^com\.electronwill(?:\..+$|$)""")
+                includeGroupByRegex("""^com\.fasterxml(?:\..+$|$)""")
+                includeGroupByRegex("""^com\.google(?:\..+$|$)""")
+                includeGroupByRegex("""^com\.neovisionaries(?:\..+$|$)""")
+                includeGroupByRegex("""^com\.squareup(?:\..+$|$)""")
+                includeGroupByRegex("""^net\.dv8tion(?:\..+$|$)""")
+                includeGroupByRegex("""^net\.sf(?:\..+$|$)""")
+                includeGroupByRegex("""^org\.apache(?:\..+$|$)""")
+                includeGroupByRegex("""^org\.jetbrains(?:\..+$|$)""")
+                includeGroupByRegex("""^org\.junit(?:\..+$|$)""")
+                includeGroupByRegex("""^org\.slf4j(?:\..+$|$)""")
+                includeGroupByRegex("""^org\.sonatype(?:\..+$|$)""")
             }
         }
     }

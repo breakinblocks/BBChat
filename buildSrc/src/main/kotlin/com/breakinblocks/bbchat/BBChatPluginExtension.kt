@@ -1,18 +1,21 @@
 package com.breakinblocks.bbchat
 
-import org.gradle.api.provider.Property
-import kotlin.io.path.Path
+import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Provider
 
 abstract class BBChatPluginExtension {
-    abstract val mutexesDir: Property<String>
+    abstract val mutexesDirectory: DirectoryProperty
 
-    fun getMutexDir(vararg dirNames: String): String {
-        var mutexPath = Path(mutexesDir.get())
-        for (dirName in dirNames) {
-            mutexPath = mutexPath.resolve(dirName)
+    fun getMutexDir(vararg dirNames: String): Provider<Directory> {
+        return mutexesDirectory.map {
+            var mutexDirectory = it
+            for (dirName in dirNames) {
+                mutexDirectory = mutexDirectory.dir(dirName)
+            }
+
+            mutexDirectory.asFile.mkdirs()
+            mutexDirectory
         }
-        mutexPath = mutexPath.toAbsolutePath()
-        mutexPath.toFile().mkdirs()
-        return mutexPath.toString()
     }
 }

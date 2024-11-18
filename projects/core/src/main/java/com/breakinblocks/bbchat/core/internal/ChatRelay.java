@@ -95,7 +95,7 @@ public final class ChatRelay implements RelayEndpoint {
         jda = JDABuilder
                 .create(
                         botToken,
-                        GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
+                        GatewayIntent.GUILD_EXPRESSIONS,
                         GatewayIntent.GUILD_MESSAGES,
                         GatewayIntent.MESSAGE_CONTENT
                 )

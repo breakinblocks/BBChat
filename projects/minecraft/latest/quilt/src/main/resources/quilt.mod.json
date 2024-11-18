@@ -18,15 +18,11 @@
     },
     "intermediate_mappings": "net.fabricmc:intermediary",
     "entrypoints": {
-      "init": "com.breakinblocks.bbchat.quilt.BBChatQuilt"
+      "bbchat:init": "com.breakinblocks.bbchat.quilt.BBChatQuilt"
     },
     "depends": [
       {
         "id": "quilt_loader",
-        "versions": "*"
-      },
-      {
-        "id": "quilted_fabric_api",
         "versions": "*"
       },
       {

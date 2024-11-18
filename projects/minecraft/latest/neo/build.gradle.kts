@@ -1,13 +1,12 @@
 @file:Suppress("PropertyName")
 
-import net.minecraftforge.gradle.userdev.UserDevExtension
-import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.gradle.util.Path
 
 val mod_id: String by project
 val mod_version: String by project
 val minecraft_version: String by project
 val minecraft_version_range_supported: String by project
+val neo_loader_version_range: String by project
 val neo_version: String by project
 val neo_version_range_supported: String by project
 val parchment_minecraft_version: String by project
@@ -16,8 +15,7 @@ val parchment_version: String by project
 plugins {
     id("com.github.ben-manes.versions")
     id("com.github.johnrengelman.shadow")
-    id("net.neoforged.gradle")
-    id("org.parchmentmc.librarian.forgegradle")
+    id("net.neoforged.gradle.userdev")
 }
 
 val corePath = ":projects:core"
@@ -25,49 +23,61 @@ val parentPath = Path.path(project.path).parent!!.path!!
 val vanillaPath = Path.path(parentPath).child("vanilla").path!!
 evaluationDependsOn(vanillaPath)
 
-configure<UserDevExtension> {
-    mappings("parchment", "${parchment_version}-${parchment_minecraft_version}")
-    copyIdeResources.set(true)
-    runs {
-        configureEach {
-            workingDirectory(file("run"))
-            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
-            property("forge.logging.console.level", "debug")
-            mods {
-                create("bbchat") {
-                    sources = listOf(
-                        sourceSets["main"],
-                        project(vanillaPath).sourceSets["main"],
-                    )
-                }
-            }
-        }
-        create("client") {
-            property("forge.enabledGameTestNamespaces", mod_id)
-        }
-        create("server") {
-            property("forge.enabledGameTestNamespaces", mod_id)
-        }
-        create("gameTestServer") {
-            property("forge.enabledGameTestNamespaces", mod_id)
-        }
-        create("data") {
-            setArgs(
-                listOf(
-                    "--mod", "bbchat",
-                    "--all",
-                    "--output", file("src/generated/resources/"),
-                    "--existing", file("src/main/resources/"),
-                )
-            )
-        }
+subsystems {
+    parchment {
+        minecraftVersion = parchment_minecraft_version
+        mappingsVersion = parchment_version
+        addRepository = false
+    }
+}
+
+runs {
+    configureEach {
+        systemProperty("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
+        systemProperty("forge.logging.console.level", "debug")
+        modSource(project.sourceSets.main.get())
+        modSource(project(vanillaPath).sourceSets["main"])
+    }
+    create("client") {
+        systemProperty("forge.enabledGameTestNamespaces", mod_id)
+    }
+    create("server") {
+        systemProperty("forge.enabledGameTestNamespaces", mod_id)
+        programArgument("--nogui")
+    }
+    create("gameTestServer") {
+        systemProperty("forge.enabledGameTestNamespaces", mod_id)
+    }
+    create("data") {
+        programArguments.addAll(
+            "--mod", "bbchat",
+            "--all",
+            "--output", file("src/generated/resources/").absolutePath,
+            "--existing", file("src/main/resources/").absolutePath,
+        )
+    }
+}
+
+sourceSets.main {
+    resources {
+        srcDir("src/generated/resources")
+    }
+}
+
+configurations {
+    runtimeClasspath {
+        extendsFrom(localRuntime.get())
     }
 }
 
 dependencies {
-    minecraft("net.neoforged:forge:${minecraft_version}-${neo_version}")
-    minecraftLibrary(project(path = corePath, configuration = "shadow"))
+    implementation("net.neoforged:neoforge:${neo_version}")
+    implementation(project(path = corePath, configuration = "shadow"))
     compileOnly(project(path = vanillaPath))
+}
+
+tasks.test {
+    enabled = false
 }
 
 tasks.withType<JavaCompile> {
@@ -76,17 +86,16 @@ tasks.withType<JavaCompile> {
 
 tasks.processResources {
     from(project(vanillaPath).sourceSets.main.get().resources)
-    inputs.property("mod_version", mod_version)
-    inputs.property("minecraft_version_range_supported", minecraft_version_range_supported)
-    inputs.property("neo_version_range_supported", neo_version_range_supported)
+    val replaceProperties = mapOf(
+        "mod_version" to mod_version,
+        "neo_loader_version_range" to neo_loader_version_range,
+        "minecraft_version_range_supported" to minecraft_version_range_supported,
+        "neo_version_range_supported" to neo_version_range_supported
+    )
+    inputs.properties(replaceProperties)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    from(sourceSets["main"].resources.srcDirs) {
-        include("META-INF/mods.toml")
-        expand(
-            "mod_version" to mod_version,
-            "minecraft_version_range_supported" to minecraft_version_range_supported,
-            "neo_version_range_supported" to neo_version_range_supported
-        )
+    filesMatching(listOf("META-INF/neoforge.mods.toml")) {
+        expand(replaceProperties)
     }
     from(sourceSets["main"].resources.srcDirs) {
         exclude("META-INF/mods.toml")
@@ -95,14 +104,14 @@ tasks.processResources {
 
 tasks.jar {
     manifest {
-        attributes(
+        attributes(mapOf(
             "Specification-Title" to "BBChat",
             "Specification-Vendor" to "Breakin' Blocks",
             "Specification-Version" to "1",
             "Implementation-Title" to project.name,
             "Implementation-Version" to project.version,
             "Implementation-Vendor" to "Breakin' Blocks"
-        )
+        ))
     }
 }
 
@@ -113,9 +122,9 @@ tasks.shadowJar {
     }
 }
 
-extensions.configure<NamedDomainObjectContainer<RenameJarInPlace>> {
-    create("shadowJar")
-}
+//extensions.configure<NamedDomainObjectContainer<RenameJarInPlace>> {
+//    create("shadowJar")
+//}
 
 tasks.build {
     dependsOn(tasks.shadowJar)
