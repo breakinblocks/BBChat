@@ -1,14 +1,14 @@
 [
   {
-    "modid": "bbchat",
-    "name": "BBChat",
+    "modid": "bblink",
+    "name": "BBLink",
     "description": "Chat relay for Minecraft and Discord",
     "version": "${mod_version}",
     "mcversion": "${mc_version}",
-    "url": "https://github.com/breakinblocks/BBChat",
+    "url": "https://github.com/FlandreS/BBLink",
     "authorList": [
-      "BBChat contributors"
+      "BBLink contributors"
     ],
-    "credits": "https://github.com/breakinblocks/BBChat/graphs/contributors"
+    "credits": "https://github.com/FlandreS/BBLink/graphs/contributors"
   }
 ]

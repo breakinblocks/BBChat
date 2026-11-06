@@ -2,6 +2,7 @@
 
 val night_config_version: String by project
 val jda_version: String by project
+val sqlite_jdbc_version: String by project
 
 plugins {
     `java-library`
@@ -9,22 +10,31 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
-base.archivesName.set("bbchat-core")
+base.archivesName.set("bblink-core")
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
 
 dependencies {
     implementation("org.jetbrains:annotations:26.0.1")
     implementation("com.google.code.findbugs:jsr305:3.0.2")
-    implementation("com.google.guava:guava:21.0")
-    implementation("org.apache.logging.log4j:log4j-api:2.17.2")
-    implementation("org.apache.logging.log4j:log4j-core:2.17.2")
+    // Minecraft 1.7.10 ships Guava 17; compile against that so nothing newer gets used.
+    compileOnly("com.google.guava:guava:17.0")
+    testRuntimeOnly("com.google.guava:guava:17.0")
     implementation("com.electronwill.night-config:core:${night_config_version}")
     implementation("com.electronwill.night-config:toml:${night_config_version}")
     implementation("net.dv8tion:JDA:${jda_version}") {
         exclude(module = "opus-java")
         exclude(module = "jsr305")
     }
+    // Shared database for relaying chat between servers on the same machine.
+    implementation("org.xerial:sqlite-jdbc:${sqlite_jdbc_version}")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.shadowJar {
@@ -45,14 +55,21 @@ tasks.shadowJar {
         include(dependency("org.jetbrains.kotlin:kotlin-stdlib-common"))
         include(dependency("org.jetbrains.kotlin:kotlin-stdlib"))
 
-        include(dependency("net.sf.trove4j:trove4j"))
+        include(dependency("net.sf.trove4j:core"))
 
         include(dependency("org.apache.commons:commons-collections4"))
 
         include(dependency("org.jetbrains:annotations"))
+
+        // Not relocated: the bundled native library binds JNI symbols to the org.sqlite package names.
+        include(dependency("org.xerial:sqlite-jdbc"))
     }
 
-    val relocatePackage = { p: String -> relocate(p, "com.breakinblocks.bbchat.shadow.$p") }
+    // Drop sqlite natives for platforms a Minecraft server won't run on.
+    exclude("org/sqlite/native/Linux-Android/**")
+    exclude("org/sqlite/native/FreeBSD/**")
+
+    val relocatePackage = { p: String -> relocate(p, "com.breakinblocks.bblink.shadow.$p") }
 
     // com.electronwill.night-config:core
     // com.electronwill.night-config:toml
@@ -78,7 +95,7 @@ tasks.shadowJar {
     // org.jetbrains.kotlin:kotlin-stdlib-common
     relocatePackage("kotlin")
 
-    // net.sf.trove4j:trove4j
+    // net.sf.trove4j:core
     relocatePackage("gnu.trove")
 
     // org.apache.commons:commons-collections4

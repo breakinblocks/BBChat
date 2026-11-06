@@ -1,0 +1,481 @@
+package com.breakinblocks.bblink.core.internal;
+
+import com.breakinblocks.bblink.core.api.MinecraftServiceCommandHandler;
+import com.breakinblocks.bblink.core.api.NameSanitizer;
+import com.breakinblocks.bblink.core.api.PlayerCountInfo;
+import com.google.common.collect.ImmutableSet;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.events.session.SessionRecreateEvent;
+import net.dv8tion.jda.api.events.session.SessionResumeEvent;
+import net.dv8tion.jda.api.exceptions.InvalidTokenException;
+import net.dv8tion.jda.api.hooks.AnnotatedEventManager;
+import net.dv8tion.jda.api.hooks.SubscribeEvent;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.MarkdownSanitizer;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.breakinblocks.bblink.core.internal.TextUtils.Formatting.BOLD;
+import static com.breakinblocks.bblink.core.internal.TextUtils.Formatting.ITALIC;
+import static com.breakinblocks.bblink.core.internal.TextUtils.Formatting.RESET;
+
+public final class ChatRelay implements RelayEndpoint {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatRelay.class);
+    private static final String FORMAT_CHAT = BOLD + "[%s]" + RESET + " %s";
+    private static final String FORMAT_LOGIN = BOLD + "%s" + RESET + " joined the server";
+    private static final String FORMAT_LOGOUT = BOLD + "%s" + RESET + " left the server";
+    private static final String FORMAT_ACHIEVEMENT = BOLD + "%s" + RESET + " got " + BOLD + "%s" + RESET + " " + ITALIC + "%s" + RESET;
+    private static final Pattern REGEX_EMOTE = Pattern.compile(":([A-Za-z0-9_]{2,32}):");
+    private static final int MAX_DISCORD_MESSAGE_LENGTH = 2000;
+    private static final int MAX_COMMAND_FILE_SIZE = 128 * 1024; // 128 KB should be plenty
+    private static final int MAX_MESSAGE_QUEUE_SIZE = 100;
+    private static final long LOGIN_ACHIEVEMENT_DELAY_MILLIS = 5 * 1000;
+    private static final long SHUTDOWN_MESSAGES_TIMEOUT_MILLIS = 5 * 1000;
+    private static final long SHUTDOWN_TIMEOUT_MILLIS = 10 * 1000;
+    private final JDA jda;
+    private final long guildId;
+    private final long channelId;
+    private final long staffRoleId;
+    private final Set<String> commandPrefixes;
+    private final Set<String> anyCommands;
+    private final ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
+    private final Set<CompletableFuture<Message>> messageFutures = ConcurrentHashMap.newKeySet();
+    private final Consumer<String> broadcastMessage;
+    private final Supplier<PlayerCountInfo> playerCount;
+    private final MinecraftServiceCommandHandler commandHandler;
+    private final Map<String, Long> lastLogin = new HashMap<>();
+    /**
+     * Blank when running a single server.
+     */
+    private final String serverName;
+    private final String serverKey;
+    /**
+     * Prepended to everything this server posts so messages from linked servers can be told apart.
+     */
+    private final String discordTag;
+    private final Supplier<Set<String>> knownServerKeys;
+
+    private ChatRelay(
+            String botToken,
+            long guildId,
+            long channelId,
+            long staffRoleId,
+            String commandPrefix,
+            Collection<String> anyCommands,
+            Consumer<String> broadcastMessage,
+            Supplier<PlayerCountInfo> playerCount,
+            MinecraftServiceCommandHandler commandHandler,
+            String serverName,
+            Supplier<Set<String>> knownServerKeys
+    ) throws InvalidTokenException, IllegalArgumentException {
+        jda = JDABuilder
+                .create(
+                        botToken,
+                        GatewayIntent.GUILD_EXPRESSIONS,
+                        GatewayIntent.GUILD_MESSAGES,
+                        GatewayIntent.MESSAGE_CONTENT
+                )
+                .disableCache(
+                        CacheFlag.ACTIVITY,
+                        CacheFlag.VOICE_STATE,
+                        CacheFlag.CLIENT_STATUS,
+                        CacheFlag.ROLE_TAGS,
+                        CacheFlag.FORUM_TAGS,
+                        CacheFlag.ONLINE_STATUS,
+                        CacheFlag.SCHEDULED_EVENTS
+                )
+                .enableCache(
+                        CacheFlag.EMOJI,
+                        CacheFlag.STICKER,
+                        CacheFlag.MEMBER_OVERRIDES
+                )
+                .setMemberCachePolicy(MemberCachePolicy.NONE)
+                .setEventManager(new AnnotatedEventManager())
+                .addEventListeners(this)
+                .build();
+        this.guildId = guildId;
+        this.channelId = channelId;
+        this.staffRoleId = staffRoleId;
+        commandPrefixes = ImmutableSet.<String>builder()
+                .add(commandPrefix)
+                .add("<@!" + jda.getSelfUser().getId() + ">")
+                .add("<@" + jda.getSelfUser().getId() + ">")
+                .build();
+        this.anyCommands = ImmutableSet.copyOf(anyCommands);
+        this.broadcastMessage = broadcastMessage;
+        this.playerCount = playerCount;
+        this.commandHandler = commandHandler;
+        this.serverName = serverName;
+        this.serverKey = CrossServerLink.serverKey(serverName);
+        this.discordTag = serverName.isEmpty() ? "" : "[" + MarkdownSanitizer.escape(serverName) + "] ";
+        this.knownServerKeys = knownServerKeys;
+    }
+
+    public static RelayEndpoint create(
+            String botToken,
+            String guildId,
+            String channelId,
+            String staffRoleId,
+            String commandPrefix,
+            Collection<String> anyCommands,
+            Consumer<String> broadcastMessage,
+            Supplier<PlayerCountInfo> playerCount,
+            MinecraftServiceCommandHandler commandHandler,
+            String serverName,
+            Supplier<Set<String>> knownServerKeys
+    ) {
+        long guildIdL = parseULongOrZero(guildId, "guildId");
+        long channelIdL = parseULongOrZero(channelId, "channelId");
+        long staffRoleIdL = parseULongOrZero(staffRoleId, "staffRoleId");
+        ProxyRelay proxyRelay = new ProxyRelay();
+        Thread createThread = new Thread(() -> {
+            try {
+                int retries = 0;
+                long delay = 5;
+                // Cap out retry delay at 1 hour.
+                long maxDelay = 60 * 60;
+                while (true) {
+                    try {
+                        LOGGER.info("Logging in to Discord...");
+                        ChatRelay chatRelay = new ChatRelay(botToken, guildIdL, channelIdL, staffRoleIdL, commandPrefix, anyCommands, broadcastMessage, playerCount, commandHandler, serverName, knownServerKeys);
+                        proxyRelay.setEndpoint(chatRelay);
+                        break;
+                    } catch (InvalidTokenException | IllegalArgumentException e) {
+                        //noinspection ThrowCaughtLocally
+                        throw e;
+                    } catch (RuntimeException e) {
+                        LOGGER.warn("Failed to connect to Discord.", e);
+                    }
+                    LOGGER.info("Retrying in " + delay + "s");
+                    Thread.sleep(delay * 1000L);
+                    delay = Math.min(delay * 2, maxDelay);
+                }
+                LOGGER.info("Connected to Discord!");
+            } catch (InterruptedException e) {
+                LOGGER.warn("Interrupted before connecting to Discord.", e);
+            } catch (InvalidTokenException | IllegalArgumentException e) {
+                LOGGER.warn("Failed to login ;-;. Check your bot token.", e);
+            }
+        });
+        createThread.setName("BBLink Relay Creation Thread");
+        createThread.setDaemon(true);
+        createThread.start();
+
+        return proxyRelay;
+    }
+
+    private static long parseULongOrZero(String input, String desc) {
+        try {
+            long value = Long.parseUnsignedLong(input);
+            if (value == 0)
+                LOGGER.warn(desc + " is zero");
+            return value;
+        } catch (NumberFormatException ignored) {
+            LOGGER.warn(desc + " failed to parse as unsigned long");
+        }
+        return 0L;
+    }
+
+    @SubscribeEvent
+    public void checkConfig(ReadyEvent event) {
+        Guild guild = jda.getGuildById(guildId);
+        if (guild == null) {
+            LOGGER.warn("Could not find guild with id '" + guildId + "', make sure the guild id is correct and that the bot has been invited to the guild.");
+        }
+
+        Channel channel = jda.getChannelById(Channel.class, channelId);
+        GuildMessageChannel guildMessageChannel;
+        if (channel == null) {
+            guildMessageChannel = null;
+            LOGGER.warn("Could not find channel with id '" + channelId + "', make sure the channel id is correct and that the bot can view the channel (check the users list in the channel).");
+        } else {
+            if (!(channel instanceof GuildMessageChannel)) {
+                guildMessageChannel = null;
+                LOGGER.warn("Channel '" + channel.getName() + "' is not a guild message channel (it might be a non-guild-message channel like a forum channel but not a thread inside it).");
+            } else {
+                guildMessageChannel = (GuildMessageChannel) channel;
+                if (!guildMessageChannel.canTalk()) {
+                    LOGGER.warn("Bot does not have permission to talk in Channel '" + guildMessageChannel.getName() + "'. Make sure the bot has permissions to send messages in the channel.");
+                }
+            }
+        }
+
+        Role staffRole = jda.getRoleById(staffRoleId);
+        if (staffRole == null) {
+            LOGGER.warn("Could not find staff role with id: " + staffRoleId);
+        }
+
+        if (guild != null && guildMessageChannel != null) {
+            Guild guildMessageChannelGuild = guildMessageChannel.getGuild();
+            if (guild.getIdLong() != guildMessageChannelGuild.getIdLong()) {
+                LOGGER.warn("Channel '" + guildMessageChannel.getName() + "' belongs to the guild '" + guildMessageChannelGuild.getName() + "'. Expected guild '" + guild.getName() + "'.");
+            }
+        }
+
+        if (guild != null && staffRole != null) {
+            Guild staffRoleGuild = staffRole.getGuild();
+            if (guild.getIdLong() != staffRoleGuild.getIdLong()) {
+                LOGGER.warn("Staff role '" + staffRole.getName() + "' belongs to the guild '" + staffRoleGuild.getName() + "'. Expected guild '" + guild.getName() + "'.");
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void relayDiscordMessageToMinecraft(MessageReceivedEvent event) {
+        if (!event.isFromGuild()) return;
+        if (event.getGuild().getIdLong() != guildId) return;
+        if (event.getChannel().getIdLong() != channelId) return;
+        // Ignore all bots and webhooks, including the relays of other linked servers. Linked servers get each
+        // other's messages through the shared database instead, so relaying them here would duplicate them.
+        if (event.getAuthor().isBot() || event.isWebhookMessage()) return;
+        if (event.getMessage().getType().isSystem()) return;
+        Member member = Objects.requireNonNull(event.getMember()); // Should not be null since TextChannel
+        String name = NameSanitizer.cleanName(member.getEffectiveName(), member.getUser().getName());
+        // Strip formatting codes so Discord users can't inject Minecraft colours/obfuscation.
+        String text = NameSanitizer.stripFormatting(event.getMessage().getContentDisplay());
+        String message = String.format("[%s] %s", name, text);
+        broadcastMessage.accept(message);
+        handlePotentialCommand(member, event.getMessage());
+    }
+
+    private void handlePotentialCommand(Member member, Message message) {
+        final String rawMessage = message.getContentRaw();
+        final String prefix = commandPrefixes.stream().filter(rawMessage::startsWith).findAny().orElse(null);
+        // Starts with the prefix or mentions the relay
+        if (prefix == null) return;
+        final String commandPortion = rawMessage.substring(prefix.length()).trim();
+        // If it's empty without the prefix, try get the command from the first attached txt file instead
+        if (commandPortion.isEmpty()) {
+            message.getAttachments().stream()
+                    .filter(attachment -> attachment.getSize() <= MAX_COMMAND_FILE_SIZE)
+                    .filter(attachment -> "txt".equals(attachment.getFileExtension()))
+                    .findFirst()
+                    .map(attachment -> attachment.getProxy().download())
+                    .ifPresent(future -> future
+                            .thenApply(stream -> {
+                                try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+                                    CharBuffer buffer = CharBuffer.allocate(MAX_COMMAND_FILE_SIZE);
+                                    int len = reader.read(buffer);
+                                    buffer.rewind();
+                                    return buffer.subSequence(0, len).toString();
+                                } catch (IOException e) {
+                                    LOGGER.error("Failed to read attachment", e);
+                                }
+                                return "";
+                            })
+                            .thenAccept(command -> handlePotentialCommand(member, command.trim()))
+                    );
+        } else {
+            handlePotentialCommand(member, commandPortion);
+        }
+    }
+
+    private void handlePotentialCommand(Member member, String command) {
+        final String fullCommand = targetCommand(command);
+        if (fullCommand == null || fullCommand.isEmpty()) return;
+        final boolean isStaff = member.getRoles().stream().anyMatch(role -> role.getIdLong() == staffRoleId);
+        final String commandRoot = fullCommand.split(" ", 2)[0];
+        // Check that it is a staff member or the command is allowed for anyone
+        if (isStaff || anyCommands.contains(commandRoot)) {
+            // Run command
+            final String name = member.getUser().getAsTag() + " (" + member.getId() + ")";
+            final String displayName = member.getEffectiveName();
+            final String logName = member.getNickname() == null ? name : name + "/" + displayName;
+            LOGGER.info(logName + " is running the command `" + fullCommand + "`");
+            commandHandler.onCommand(isStaff, name, displayName, fullCommand, this::convertAndSendToDiscord);
+        }
+    }
+
+    /**
+     * With multiple linked servers, {@code <prefix><serverName> <command>} runs only on that server, and a command
+     * without a server name runs on all of them.
+     *
+     * @return The command to run on this server, or null if it is meant for a different server.
+     */
+    @Nullable
+    private String targetCommand(String command) {
+        if (serverName.isEmpty()) return command;
+        String[] parts = command.split("\\s+", 2);
+        String target = parts[0].toLowerCase(Locale.ROOT);
+        if (target.equals(serverKey)) {
+            return parts.length > 1 ? parts[1].trim() : "";
+        }
+        if (knownServerKeys.get().contains(target)) {
+            return null;
+        }
+        return command;
+    }
+
+    private void sendQueueToDiscord() {
+        Guild guild = jda.getGuildById(guildId);
+        if (guild == null) return;
+        GuildMessageChannel channel = guild.getChannelById(GuildMessageChannel.class, channelId);
+        if (channel == null) return;
+        if (!channel.canTalk()) return;
+        for (CharSequence message = messageQueue.poll(); message != null; message = messageQueue.poll()) {
+            CharSequence replaced = replaceEmotes(message);
+            CharSequence truncated = replaced.subSequence(0, Math.min(MAX_DISCORD_MESSAGE_LENGTH, replaced.length()));
+            CompletableFuture<Message> messageFuture = channel.sendMessage(truncated).submit();
+            messageFutures.add(messageFuture);
+            messageFuture.whenComplete((m, t) -> messageFutures.remove(messageFuture));
+        }
+    }
+
+    private CharSequence replaceEmotes(CharSequence message) {
+        Matcher matcher = REGEX_EMOTE.matcher(message);
+        StringBuffer buff = new StringBuffer();
+        while (matcher.find()) {
+            Optional<RichCustomEmoji> emote = jda.getEmojisByName(matcher.group(1), false).stream().findFirst();
+            matcher.appendReplacement(buff, emote.map(CustomEmoji::getAsMention).orElseGet(matcher::group));
+        }
+        matcher.appendTail(buff);
+        return buff;
+    }
+
+    private void sendToDiscord(String message) {
+        while (messageQueue.size() >= MAX_MESSAGE_QUEUE_SIZE) {
+            messageQueue.poll();
+        }
+        messageQueue.add(discordTag + message);
+        sendQueueToDiscord();
+    }
+
+    private void convertAndSendToDiscord(String text) {
+        sendToDiscord(TextUtils.convertToDiscord(text));
+    }
+
+    private void updatePlayerCount(boolean minusOne) {
+        PlayerCountInfo info = playerCount.get();
+        int current = info.getCurrent() + (minusOne ? -1 : 0);
+        String suffix = serverName.isEmpty() ? "" : " on " + serverName;
+        jda.getPresence().setActivity(Activity.of(Activity.ActivityType.PLAYING, "with " + current + "/" + info.getMax() + " players" + suffix));
+    }
+
+    @SubscribeEvent
+    public void sendQueueOnConnect(ReadyEvent event) {
+        sendQueueToDiscord();
+    }
+
+    @SubscribeEvent
+    public void sendQueueOnSessionResume(SessionResumeEvent event) {
+        sendQueueToDiscord();
+    }
+
+    @SubscribeEvent
+    public void sendQueueOnSessionRecreate(SessionRecreateEvent event) {
+        sendQueueToDiscord();
+    }
+
+    @Override
+    public void cleanup() {
+        jda.shutdown();
+
+        try {
+            if (!jda.awaitShutdown(Duration.ofMillis(SHUTDOWN_TIMEOUT_MILLIS))) {
+                jda.shutdownNow();
+                jda.awaitShutdown();
+            }
+        } catch (InterruptedException ignored) {
+            jda.shutdownNow();
+        }
+    }
+
+    @Override
+    public void onStarted() {
+        sendToDiscord("**Server Started**");
+        updatePlayerCount(false);
+    }
+
+    @Override
+    public void onStopped() {
+        sendToDiscord("**Server Stopped**");
+
+        try {
+            // Wait for the remaining messages to send with a timeout.
+            CompletableFuture.allOf(messageFutures.toArray(new CompletableFuture[0]))
+                    .get(SHUTDOWN_MESSAGES_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException ignored) {
+        }
+    }
+
+    @Override
+    public void onChat(String name, String text) {
+        convertAndSendToDiscord(String.format(FORMAT_CHAT, escape(name), text));
+    }
+
+    @Override
+    public void onLogin(String name) {
+        lastLogin.put(name, System.currentTimeMillis());
+        convertAndSendToDiscord(String.format(FORMAT_LOGIN, escape(name)));
+        updatePlayerCount(false);
+    }
+
+    @Override
+    public void onLogout(String name) {
+        convertAndSendToDiscord(String.format(FORMAT_LOGOUT, escape(name)));
+        updatePlayerCount(true);
+    }
+
+    @Override
+    public void onAchievement(String name, String title, String description) {
+        long now = System.currentTimeMillis();
+        if (now < lastLogin.getOrDefault(name, now) + LOGIN_ACHIEVEMENT_DELAY_MILLIS)
+            return;
+        convertAndSendToDiscord(String.format(FORMAT_ACHIEVEMENT, escape(name), title, description));
+    }
+
+    @Override
+    public void onDeath(String message, String target, @Nullable String source) {
+        message = TextUtils.replaceWord(message, target, BOLD + escape(target) + RESET);
+        if (source != null) {
+            message = TextUtils.replaceWord(message, source, BOLD + escape(source) + RESET);
+        }
+        convertAndSendToDiscord(message);
+    }
+
+    /**
+     * Names like {@code __Steve__} or {@code *Bob*} would otherwise be rendered as Markdown in Discord.
+     */
+    private static String escape(String name) {
+        return MarkdownSanitizer.escape(name);
+    }
+}
